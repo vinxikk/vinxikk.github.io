@@ -252,7 +252,7 @@ table td {
   background: #263238;
   color: #eff;
   font-size: 14px;
-  line-height: 20px;
+  line-height: 0px;
 }
 figure.highlight {
   position: relative;
@@ -800,7 +800,7 @@ footer.is-mobile {
   word-break: break-word;
 }
 .recent-post-item .content iframe {
-  width: 700px;
+  width: 830px;
   height: 393.75px;
 }
 .recent-post-item .article-type {
@@ -1250,7 +1250,7 @@ footer.is-mobile {
 }
 .layout {
   margin: 0 auto;
-  width: 700px;
+  width: 830px;
   opacity: 0;
   -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=0)";
   filter: alpha(opacity=0);
