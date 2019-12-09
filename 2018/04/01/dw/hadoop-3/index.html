@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"><meta name="description" content="HDFS架构&amp;SNN流程&amp;BLOCK和副本数&amp;小文件问题"><meta name="keywords" content="Hadoop,HDFS"><meta name="author" content="VinxC"><meta name="copyright" content="VinxC"><title>HDFS架构&amp;SNN流程&amp;BLOCK和副本数&amp;小文件问题 | VinxC's blog</title><link rel="shortcut icon" href="/melody-favicon.ico"><link rel="stylesheet" href="/css/index.css?version=1.6.1"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome@latest/css/font-awesome.min.css?version=1.6.1"><link rel="dns-prefetch" href="https://cdn.staticfile.org"><link rel="dns-prefetch" href="https://cdn.bootcss.com"><link rel="dns-prefetch" href="https://creativecommons.org"><script>var GLOBAL_CONFIG = { 
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"><meta name="description" content="HDFS架构&amp;NameNode和DataNode工作机制&amp;BLOCK和副本数&amp;小文件问题"><meta name="keywords" content="HDFS架构,NN/DN工作机制,HDFS小文件问题"><meta name="author" content="VinxC"><meta name="copyright" content="VinxC"><title>HDFS架构&amp;NameNode和DataNode工作机制&amp;BLOCK和副本数&amp;小文件问题 | VinxC's blog</title><link rel="shortcut icon" href="/melody-favicon.ico"><link rel="stylesheet" href="/css/index.css?version=1.6.1"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome@latest/css/font-awesome.min.css?version=1.6.1"><link rel="dns-prefetch" href="https://cdn.staticfile.org"><link rel="dns-prefetch" href="https://cdn.bootcss.com"><link rel="dns-prefetch" href="https://creativecommons.org"><script>var GLOBAL_CONFIG = { 
   root: '/',
   algolia: undefined,
   localSearch: {"path":"search.xml","languages":{"hits_empty":"We didn't find any results for the search: ${query}"}},
@@ -7,11 +7,110 @@
     error: 'Copy error',
     noSupport: 'The browser does not support'
   }
-} </script></head><body><canvas class="fireworks"></canvas><i class="fa fa-arrow-right" id="toggle-sidebar" aria-hidden="true"></i><div id="sidebar"><div class="toggle-sidebar-info text-center"><span data-toggle="Toggle article">Toggle site</span><hr></div><div class="sidebar-toc"><div class="sidebar-toc__title">Catalog</div><div class="sidebar-toc__progress"><span class="progress-notice">You've read</span><span class="progress-num">0</span><span class="progress-percentage">%</span><div class="sidebar-toc__progress-bar"></div></div><div class="sidebar-toc__content"><ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#块大小，副本数"><span class="toc-number">1.</span> <span class="toc-text">块大小，副本数</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#小文件"><span class="toc-number">2.</span> <span class="toc-text">小文件</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#HDFS架构"><span class="toc-number">3.</span> <span class="toc-text">HDFS架构</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#SNN流程"><span class="toc-number">4.</span> <span class="toc-text">SNN流程</span></a></li></ol></div></div><div class="author-info hide"><div class="author-info__avatar text-center"><img src="https://vinxikk.github.io/img/avatar.png"></div><div class="author-info__name text-center">VinxC</div><div class="author-info__description text-center">A Bigdata Developer</div><hr><div class="author-info-articles"><a class="author-info-articles__archives article-meta" href="/archives"><span class="pull-left">Articles</span><span class="pull-right">16</span></a><a class="author-info-articles__tags article-meta" href="/tags"><span class="pull-left">Tags</span><span class="pull-right">19</span></a><a class="author-info-articles__categories article-meta" href="/categories"><span class="pull-left">Categories</span><span class="pull-right">7</span></a></div><hr><div class="author-info-links"><div class="author-info-links__title text-center">Links</div><a class="author-info-links__name text-center" href="https://molunerfinn.com" target="_blank" rel="noopener">Molunerfinn</a></div></div></div><div id="content-outer"><div class="no-bg" id="top-container"><div id="page-header"><span class="pull-left"> <a id="site-name" href="/">VinxC's blog</a></span><i class="fa fa-bars toggle-menu pull-right" aria-hidden="true"></i><span class="pull-right menus"><a class="site-page social-icon search"><i class="fa fa-search"></i><span> Search</span></a><a class="site-page" href="/">Home</a><a class="site-page" href="/archives">Archives</a><a class="site-page" href="/tags">Tags</a><a class="site-page" href="/categories">Categories</a></span></div><div id="post-info"><div id="post-title">HDFS架构&amp;SNN流程&amp;BLOCK和副本数&amp;小文件问题</div><div id="post-meta"><time class="post-meta__date"><i class="fa fa-calendar" aria-hidden="true"></i> 2018-04-01</time><span class="post-meta__separator">|</span><i class="fa fa-inbox post-meta__icon" aria-hidden="true"></i><a class="post-meta__categories" href="/categories/Hadoop/">Hadoop</a><div class="post-meta-wordcount"><span>Word count: </span><span class="word-count">17</span><span class="post-meta__separator">|</span><span>Reading time: 1 min</span></div></div></div></div><div class="layout" id="content-inner"><article id="post"><div class="article-container" id="post-content"><h3 id="块大小，副本数"><a href="#块大小，副本数" class="headerlink" title="块大小，副本数"></a>块大小，副本数</h3><p>test</p>
-<h3 id="小文件"><a href="#小文件" class="headerlink" title="小文件"></a>小文件</h3><p>test</p>
-<h3 id="HDFS架构"><a href="#HDFS架构" class="headerlink" title="HDFS架构"></a>HDFS架构</h3><p>test</p>
-<h3 id="SNN流程"><a href="#SNN流程" class="headerlink" title="SNN流程"></a>SNN流程</h3><p>test</p>
-</div></article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">Author: </span><span class="post-copyright-info"><a href="mailto:undefined" target="_blank" rel="noopener">VinxC</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">Link: </span><span class="post-copyright-info"><a href="/https:/vinxikk.github.io/2018/04/01/dw/hadoop-3/">https://vinxikk.github.io/2018/04/01/dw/hadoop-3/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">Copyright Notice: </span><span class="post-copyright-info">All articles in this blog are licensed under <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank" rel="noopener">CC BY-NC-SA 4.0</a> unless stating additionally.</span></div></div><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/Hadoop/">Hadoop</a><a class="post-meta__tags" href="/tags/HDFS/">HDFS</a></div><nav id="pagination"><div class="prev-post pull-left"><a href="/2018/04/04/dw/hadoop-4/"><i class="fa fa-chevron-left">  </i><span>HDFS副本放置策略&amp;读写流程&amp;PID文件&amp;常用命令&amp;磁盘均衡</span></a></div><div class="next-post pull-right"><a href="/2018/03/11/linux/linux-user-group/"><span>Linux用户和用户组</span><i class="fa fa-chevron-right"></i></a></div></nav></div></div><footer><div class="layout" id="footer"><div class="copyright">&copy;2017 - 2019 By VinxC</div><div class="framework-info"><span>Driven - </span><a href="http://hexo.io" target="_blank" rel="noopener"><span>Hexo</span></a><span class="footer-separator">|</span><span>Theme - </span><a href="https://github.com/Molunerfinn/hexo-theme-melody" target="_blank" rel="noopener"><span>Melody</span></a></div><div class="busuanzi"><script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><span id="busuanzi_container_page_pv"><i class="fa fa-file-o"></i><span id="busuanzi_value_page_pv"></span><span></span></span></div></div></footer><i class="fa fa-arrow-up" id="go-up" aria-hidden="true"></i><script src="https://cdn.jsdelivr.net/npm/animejs@latest/anime.min.js"></script><script src="https://cdn.jsdelivr.net/npm/jquery@latest/dist/jquery.min.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@latest/dist/jquery.fancybox.min.js"></script><script src="https://cdn.jsdelivr.net/npm/velocity-animate@latest/velocity.min.js"></script><script src="https://cdn.jsdelivr.net/npm/velocity-ui-pack@latest/velocity.ui.min.js"></script><script src="/js/utils.js?version=1.6.1"></script><script src="/js/fancybox.js?version=1.6.1"></script><script src="/js/sidebar.js?version=1.6.1"></script><script src="/js/copy.js?version=1.6.1"></script><script src="/js/fireworks.js?version=1.6.1"></script><script src="/js/transition.js?version=1.6.1"></script><script src="/js/scroll.js?version=1.6.1"></script><script src="/js/head.js?version=1.6.1"></script><script src="/js/search/local-search.js"></script><script>if(/Android|webOS|iPhone|iPod|BlackBerry/i.test(navigator.userAgent)) {
+} </script></head><body><canvas class="fireworks"></canvas><i class="fa fa-arrow-right" id="toggle-sidebar" aria-hidden="true"></i><div id="sidebar"><div class="toggle-sidebar-info text-center"><span data-toggle="Toggle article">Toggle site</span><hr></div><div class="sidebar-toc"><div class="sidebar-toc__title">Catalog</div><div class="sidebar-toc__progress"><span class="progress-notice">You've read</span><span class="progress-num">0</span><span class="progress-percentage">%</span><div class="sidebar-toc__progress-bar"></div></div><div class="sidebar-toc__content"><ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#HDFS架构"><span class="toc-number">1.</span> <span class="toc-text">HDFS架构</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#NameNode（名称节点）"><span class="toc-number">1.1.</span> <span class="toc-text">NameNode（名称节点）</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#NameNode工作机制"><span class="toc-number">1.1.1.</span> <span class="toc-text">NameNode工作机制</span></a></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#DataNode（数据节点）"><span class="toc-number">1.2.</span> <span class="toc-text">DataNode（数据节点）</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#DataNode工作机制"><span class="toc-number">1.3.</span> <span class="toc-text">DataNode工作机制</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#ScondaryNameNode（第二名称节点）"><span class="toc-number">1.4.</span> <span class="toc-text">ScondaryNameNode（第二名称节点）</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#机架感知（副本放置策略）"><span class="toc-number">1.5.</span> <span class="toc-text">机架感知（副本放置策略）</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#块大小和副本数"><span class="toc-number">2.</span> <span class="toc-text">块大小和副本数</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#HDFS小文件问题"><span class="toc-number">3.</span> <span class="toc-text">HDFS小文件问题</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#小文件优化"><span class="toc-number">3.1.</span> <span class="toc-text">小文件优化</span></a></li></ol></li></ol></div></div><div class="author-info hide"><div class="author-info__avatar text-center"><img src="https://vinxikk.github.io/img/avatar.png"></div><div class="author-info__name text-center">VinxC</div><div class="author-info__description text-center">A Bigdata Developer</div><hr><div class="author-info-articles"><a class="author-info-articles__archives article-meta" href="/archives"><span class="pull-left">Articles</span><span class="pull-right">16</span></a><a class="author-info-articles__tags article-meta" href="/tags"><span class="pull-left">Tags</span><span class="pull-right">22</span></a><a class="author-info-articles__categories article-meta" href="/categories"><span class="pull-left">Categories</span><span class="pull-right">7</span></a></div><hr><div class="author-info-links"><div class="author-info-links__title text-center">Links</div><a class="author-info-links__name text-center" href="https://molunerfinn.com" target="_blank" rel="noopener">Molunerfinn</a></div></div></div><div id="content-outer"><div class="no-bg" id="top-container"><div id="page-header"><span class="pull-left"> <a id="site-name" href="/">VinxC's blog</a></span><i class="fa fa-bars toggle-menu pull-right" aria-hidden="true"></i><span class="pull-right menus"><a class="site-page social-icon search"><i class="fa fa-search"></i><span> Search</span></a><a class="site-page" href="/">Home</a><a class="site-page" href="/archives">Archives</a><a class="site-page" href="/tags">Tags</a><a class="site-page" href="/categories">Categories</a></span></div><div id="post-info"><div id="post-title">HDFS架构&amp;NameNode和DataNode工作机制&amp;BLOCK和副本数&amp;小文件问题</div><div id="post-meta"><time class="post-meta__date"><i class="fa fa-calendar" aria-hidden="true"></i> 2018-04-01</time><span class="post-meta__separator">|</span><i class="fa fa-inbox post-meta__icon" aria-hidden="true"></i><a class="post-meta__categories" href="/categories/Hadoop/">Hadoop</a><div class="post-meta-wordcount"><span>Word count: </span><span class="word-count">1.4k</span><span class="post-meta__separator">|</span><span>Reading time: 4 min</span></div></div></div></div><div class="layout" id="content-inner"><article id="post"><div class="article-container" id="post-content"><h3 id="HDFS架构"><a href="#HDFS架构" class="headerlink" title="HDFS架构"></a>HDFS架构</h3><p>HDFS主要由3个组件构成：NameNode, DataNode, SecondaryNameNode。</p>
+<p>HDFS是以master/slave模式运行的，通常NameNode, SecondaryNameNode运行在master节点，DataNode运行在slave节点。</p>
+<p>HDFS架构图：</p>
+<p><img src="https://vinxikk.github.io/img/dw/hdfs-architecture.png" alt="HDFS主从架构"></p>
+<h4 id="NameNode（名称节点）"><a href="#NameNode（名称节点）" class="headerlink" title="NameNode（名称节点）"></a>NameNode（名称节点）</h4><p>存储：文件元数据信息，包含：</p>
+<ul>
+<li>文件名称</li>
+<li>文件目录结构</li>
+<li>文件的属性（权限，创建时间，副本数）</li>
+<li>文件对应哪些数据块 –&gt; 数据块对应哪些DN节点</li>
+</ul>
+<p>作用：</p>
+<ul>
+<li>管理文件系统命名空间</li>
+<li>维护文件系统树及树中的所有文件和目录</li>
+<li>维护所有这些文件或目录的打开、关闭、移动、重命名等操作</li>
+</ul>
+<h5 id="NameNode工作机制"><a href="#NameNode工作机制" class="headerlink" title="NameNode工作机制"></a>NameNode工作机制</h5><p><img src="https://vinxikk.github.io/img/dw/namenode-detail.png" alt="NN工作机制"></p>
+<h4 id="DataNode（数据节点）"><a href="#DataNode（数据节点）" class="headerlink" title="DataNode（数据节点）"></a>DataNode（数据节点）</h4><p>存储：数据块，数据块校验和，与NN通信</p>
+<p>作用：</p>
+<ul>
+<li>读写文件的数据块</li>
+<li>接收NN的指示来进行创建、删除、复制等操作</li>
+<li>通过心跳定期向NN发送所存储文件块列表信息</li>
+</ul>
+<h4 id="DataNode工作机制"><a href="#DataNode工作机制" class="headerlink" title="DataNode工作机制"></a>DataNode工作机制</h4><p><img src="https://vinxikk.github.io/img/dw/datanode-detail.png" alt="DN工作机制"></p>
+<h4 id="ScondaryNameNode（第二名称节点）"><a href="#ScondaryNameNode（第二名称节点）" class="headerlink" title="ScondaryNameNode（第二名称节点）"></a>ScondaryNameNode（第二名称节点）</h4><p>存储：命名空间镜像文件fsimage+编辑日志editlog</p>
+<p>作用：</p>
+<ul>
+<li>定期合并fsimage+editlog文件为新的fsimage，推送给NN</li>
+<li>监控HDFS状态，每隔一段时间获取HDFS元数据的快照</li>
+</ul>
+<h4 id="机架感知（副本放置策略）"><a href="#机架感知（副本放置策略）" class="headerlink" title="机架感知（副本放置策略）"></a>机架感知（副本放置策略）</h4><p>官网地址：</p>
+<p><a href="http://hadoop.apache.org/docs/r2.7.2/hadoop-project-dist/hadoop-common/RackAwareness.html" target="_blank" rel="noopener">http://hadoop.apache.org/docs/r2.7.2/hadoop-project-dist/hadoop-common/RackAwareness.html</a></p>
+<p><a href="http://hadoop.apache.org/docs/r2.7.2/hadoop-project-dist/hadoop-hdfs/HdfsDesign.html#Data_Replication" target="_blank" rel="noopener">http://hadoop.apache.org/docs/r2.7.2/hadoop-project-dist/hadoop-hdfs/HdfsDesign.html#Data_Replication</a></p>
+<p>一个hadoop分布式集群会有很多的服务器，由于受到机架槽位和交换机网口的限制，通常大型的分布式集群都会跨好几个机架，机架内的服务器之间的网络速度通常都会高于跨机架服务器之间的网络速度，并且机架之间服务器的网络通信通常受到上层交换机间网络带宽的限制。</p>
+<p><img src="https://vinxikk.github.io/img/dw/replication-and-rack-awareness.jpg" alt="副本放置策略"></p>
+<p>HDFS对数据文件是分block存储，每个block默认有3个副本（也可以配置大于3），HDFS对副本的存放策略如下：</p>
+<ol>
+<li>第一个副本：放置在Client所在的DN节点上（如果是集群外提交，则随机挑选一台磁盘不太慢、CPU不太忙的DN节点）</li>
+<li>第二个副本：放置在与第一个副本不同的机架的节点上（随机选择）</li>
+<li>第三个副本：与第二个副本相同机架的不同节点上</li>
+<li>如果还有更多的副本，随机放在集群的节点中</li>
+</ol>
+<p>这样的策略主要是为了数据的可靠性和数据访问的性能：</p>
+<ul>
+<li>数据分布在不同的机架上，就算当前机架挂掉，其他机架上还有冗余备份，整个集群依然能对外服务。</li>
+<li>数据分布在不同的机架上，运行MR任务时可以就近获取所需的数据。</li>
+</ul>
+<h3 id="块大小和副本数"><a href="#块大小和副本数" class="headerlink" title="块大小和副本数"></a>块大小和副本数</h3><p>块大小和副本数需要在hdfs-site.xml中配置。</p>
+<p>官网中的相应的默认参数如下：</p>
+<table>
+<thead>
+<tr>
+<th>name</th>
+<th>value</th>
+<th>description</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>dfs.blocksize</td>
+<td>134217728</td>
+<td>The default block size for new files, in bytes. You can use the following suffix (case insensitive): k(kilo), m(mega), g(giga), t(tera), p(peta), e(exa) to specify the size (such as 128k, 512m, 1g, etc.), Or provide complete size in bytes (such as 134217728 for 128 MB).</td>
+</tr>
+<tr>
+<td>dfs.replication</td>
+<td>3</td>
+<td>Default block replication. The actual number of replications can be specified when the file is created. The default is used if replication is not specified in create time.</td>
+</tr>
+</tbody></table>
+<p>可以看到，默认块大小为128M，默认副本数为3.</p>
+<p>这里会有一个常规的面试题：</p>
+<p>问：假如一个文件300M，块128M，副本2。请问实际存储空间多大，多少块？</p>
+<p>答：300 x 2 = 600M，3 x 2 = 6块</p>
+<p>需要注意的是，实际存储空间=文件大小x副本数，并不是块大小，即使44M也占用一个块。</p>
+<h3 id="HDFS小文件问题"><a href="#HDFS小文件问题" class="headerlink" title="HDFS小文件问题"></a>HDFS小文件问题</h3><p>HDFS上每个文件都要在NameNode上建立一个索引，这样当小文件比较多的时候，就会产生很多的索引文件，一方面会大量占用NameNode的内存空间，另一方面就是索引文件过大使得索引速度变慢。</p>
+<h4 id="小文件优化"><a href="#小文件优化" class="headerlink" title="小文件优化"></a>小文件优化</h4><p>小文件的优化无非以下几种方式：</p>
+<ol>
+<li>在数据采集的时候，就将小文件或小批数据合成大文件再上传HDFS</li>
+<li>在业务处理之前，在HDFS上使用MapReduce程序对小文件进行合并</li>
+</ol>
+<p>根据上面的思想，可以考虑采用下面的解决方案：</p>
+<ol>
+<li><p>Hadoop Archive：</p>
+<p>是一个高效地将小文件放入HDFS块中的文件存档工具，它能够将多个小文件打包成一个HAR文件，这样就减少了namenode的内存使用。</p>
+</li>
+<li><p>Sequence file：</p>
+<p>sequence file由一系列的二进制key/value组成，如果key为文件名，value为文件内容，则可以将大批小文件合并成一个大文件。</p>
+</li>
+<li><p>CombineFileInputFormat：</p>
+<p>CombineFileInputFormat是一种新的inputformat，用于将多个文件合并成一个单独的split，另外，它会考虑数据的存储位置。</p>
+</li>
+<li><p>开启JVM重用：</p>
+<p>对于大量小文件job，可以开启JVM重用，会减少45%运行时间。</p>
+<p>JVM重用理解：一个map运行一个jvm，重用的话，在一个map在jvm上运行完毕后，jvm继续运行其他map。</p>
+<p>具体设置：mapreduce.job.jvm.numtasks值在10-20之间。</p>
+</li>
+</ol>
+<p>总的来说，解决小文件问题主要就是将小文件合并成大文件，一般约定：尽量使得合并后的大文件&lt;=blocksize，比如110M（假如块大小128M）。</p>
+<p>一般在生产上会设置一个阈值，比如10M，作为小文件的门槛，并使用shell脚本调用程序进行小文件的定期合并。</p>
+<hr>
+<p>参考：</p>
+<p><a href="https://www.jianshu.com/p/39254e03558d" target="_blank" rel="noopener">https://www.jianshu.com/p/39254e03558d</a></p>
+</div></article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">Author: </span><span class="post-copyright-info"><a href="mailto:undefined" target="_blank" rel="noopener">VinxC</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">Link: </span><span class="post-copyright-info"><a href="/https:/vinxikk.github.io/2018/04/01/dw/hadoop-3/">https://vinxikk.github.io/2018/04/01/dw/hadoop-3/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">Copyright Notice: </span><span class="post-copyright-info">All articles in this blog are licensed under <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank" rel="noopener">CC BY-NC-SA 4.0</a> unless stating additionally.</span></div></div><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/HDFS%E6%9E%B6%E6%9E%84/">HDFS架构</a><a class="post-meta__tags" href="/tags/NN-DN%E5%B7%A5%E4%BD%9C%E6%9C%BA%E5%88%B6/">NN/DN工作机制</a><a class="post-meta__tags" href="/tags/HDFS%E5%B0%8F%E6%96%87%E4%BB%B6%E9%97%AE%E9%A2%98/">HDFS小文件问题</a></div><nav id="pagination"><div class="prev-post pull-left"><a href="/2018/04/04/dw/hadoop-4/"><i class="fa fa-chevron-left">  </i><span>HDFS副本放置策略&amp;读写流程&amp;PID文件&amp;常用命令&amp;磁盘均衡</span></a></div><div class="next-post pull-right"><a href="/2018/03/11/linux/linux-user-group/"><span>Linux用户和用户组</span><i class="fa fa-chevron-right"></i></a></div></nav></div></div><footer><div class="layout" id="footer"><div class="copyright">&copy;2017 - 2019 By VinxC</div><div class="framework-info"><span>Driven - </span><a href="http://hexo.io" target="_blank" rel="noopener"><span>Hexo</span></a><span class="footer-separator">|</span><span>Theme - </span><a href="https://github.com/Molunerfinn/hexo-theme-melody" target="_blank" rel="noopener"><span>Melody</span></a></div><div class="busuanzi"><script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><span id="busuanzi_container_page_pv"><i class="fa fa-file-o"></i><span id="busuanzi_value_page_pv"></span><span></span></span></div></div></footer><i class="fa fa-arrow-up" id="go-up" aria-hidden="true"></i><script src="https://cdn.jsdelivr.net/npm/animejs@latest/anime.min.js"></script><script src="https://cdn.jsdelivr.net/npm/jquery@latest/dist/jquery.min.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@latest/dist/jquery.fancybox.min.js"></script><script src="https://cdn.jsdelivr.net/npm/velocity-animate@latest/velocity.min.js"></script><script src="https://cdn.jsdelivr.net/npm/velocity-ui-pack@latest/velocity.ui.min.js"></script><script src="/js/utils.js?version=1.6.1"></script><script src="/js/fancybox.js?version=1.6.1"></script><script src="/js/sidebar.js?version=1.6.1"></script><script src="/js/copy.js?version=1.6.1"></script><script src="/js/fireworks.js?version=1.6.1"></script><script src="/js/transition.js?version=1.6.1"></script><script src="/js/scroll.js?version=1.6.1"></script><script src="/js/head.js?version=1.6.1"></script><script src="/js/search/local-search.js"></script><script>if(/Android|webOS|iPhone|iPod|BlackBerry/i.test(navigator.userAgent)) {
   $('#nav').addClass('is-mobile')
   $('footer').addClass('is-mobile')
 }</script><div class="search-dialog" id="local-search"><div class="search-dialog__title" id="local-search-title">Local search</div><div id="local-input-panel"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="Search for Posts"></div></div></div><hr><div id="local-search-results"><div id="local-hits"></div><div id="local-stats"><div class="local-search-stats__hr" id="hr"><span>Powered by</span> <a href="https://github.com/wzpan/hexo-generator-search" target="_blank" rel="noopener" style="color:#49B1F5;">hexo-generator-search</a></div></div></div><span class="search-close-button"><i class="fa fa-times"></i></span></div><div class="search-mask"></div></body></html>
