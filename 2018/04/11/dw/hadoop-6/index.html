@@ -174,21 +174,9 @@
 <p>第二台机器 不强悍 pcore:vcore=1:1</p>
 <h3 id="资源调度器"><a href="#资源调度器" class="headerlink" title="资源调度器"></a>资源调度器</h3><p>目前，Hadoop作业调度器主要有三种：FIFO、Capacity Scheduler和Fair Scheduler。</p>
 <p>Hadoop默认的资源调度器是Capacity Scheduler，CDH默认是Fair Scheduler。</p>
-<p>apache官网默认参数：</p>
-<table>
-<thead>
-<tr>
-<th>name</th>
-<th>value</th>
-<th>description</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>yarn.resourcemanager.scheduler.class</td>
-<td>org.apache.hadoop.yarn.server.resourcemanager.scheduler.capacity.CapacityScheduler</td>
-<td>The class to use as the resource scheduler.</td>
-</tr>
-</tbody></table>
+<p>apache官网默认参数（yarn-site.xml）：</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">property</span>&gt;</span></span></pre></td></tr><tr><td class="gutter"><pre><span class="line">2</span></pre></td><td class="code"><pre><span class="line">  <span class="tag">&lt;<span class="name">name</span>&gt;</span>yarn.resourcemanager.scheduler.class<span class="tag">&lt;/<span class="name">name</span>&gt;</span></span></pre></td></tr><tr><td class="gutter"><pre><span class="line">3</span></pre></td><td class="code"><pre><span class="line">  <span class="tag">&lt;<span class="name">value</span>&gt;</span>org.apache.hadoop.yarn.server.resourcemanager.scheduler.capacity.CapacityScheduler<span class="tag">&lt;/<span class="name">value</span>&gt;</span></span></pre></td></tr><tr><td class="gutter"><pre><span class="line">4</span></pre></td><td class="code"><pre><span class="line">  <span class="tag">&lt;<span class="name">description</span>&gt;</span>The class to use as the resource scheduler.<span class="tag">&lt;/<span class="name">description</span>&gt;</span></span></pre></td></tr><tr><td class="gutter"><pre><span class="line">5</span></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;/<span class="name">property</span>&gt;</span></span></pre></td></tr></table></figure>
+
 <p>三种调度器如下：</p>
 <p><img src="https://vinxikk.github.io/img/dw/scheduler.png" alt="YARN的3种资源调度器"></p>
 <h4 id="FIFO（先进先出）"><a href="#FIFO（先进先出）" class="headerlink" title="FIFO（先进先出）"></a>FIFO（先进先出）</h4><p><img src="https://vinxikk.github.io/img/dw/fifo-scheduler.png" alt="FIFO-先进先出调度器"></p>
