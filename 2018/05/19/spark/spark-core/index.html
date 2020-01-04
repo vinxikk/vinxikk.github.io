@@ -1,0 +1,244 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"><meta name="description" content="RDD的常用算子&amp;persist/cache缓存机制&amp;checkpoint容错机制"><meta name="keywords" content="Spark"><meta name="author" content="VinxC"><meta name="copyright" content="VinxC"><title>RDD的常用算子&amp;persist/cache缓存机制&amp;checkpoint容错机制 | VinxC's blog</title><link rel="shortcut icon" href="/melody-favicon.ico"><link rel="stylesheet" href="/css/index.css?version=1.6.1"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome@latest/css/font-awesome.min.css?version=1.6.1"><link rel="dns-prefetch" href="https://cdn.staticfile.org"><link rel="dns-prefetch" href="https://cdn.bootcss.com"><link rel="dns-prefetch" href="https://creativecommons.org"><script>var GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"search.xml","languages":{"hits_empty":"We didn't find any results for the search: ${query}"}},
+  copy: {
+    success: 'Copy successfully',
+    error: 'Copy error',
+    noSupport: 'The browser does not support'
+  }
+} </script></head><body><canvas class="fireworks"></canvas><i class="fa fa-arrow-right" id="toggle-sidebar" aria-hidden="true"></i><div id="sidebar"><div class="toggle-sidebar-info text-center"><span data-toggle="Toggle article">Toggle site</span><hr></div><div class="sidebar-toc"><div class="sidebar-toc__title">Catalog</div><div class="sidebar-toc__progress"><span class="progress-notice">You've read</span><span class="progress-num">0</span><span class="progress-percentage">%</span><div class="sidebar-toc__progress-bar"></div></div><div class="sidebar-toc__content"><ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#RDD的基本概念"><span class="toc-number">1.</span> <span class="toc-text">RDD的基本概念</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#什么是RDD"><span class="toc-number">1.1.</span> <span class="toc-text">什么是RDD</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#RDD的属性"><span class="toc-number">1.2.</span> <span class="toc-text">RDD的属性</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#RDD的创建方式"><span class="toc-number">1.3.</span> <span class="toc-text">RDD的创建方式</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#RDD的基本原理"><span class="toc-number">1.4.</span> <span class="toc-text">RDD的基本原理</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#RDD的算子"><span class="toc-number">2.</span> <span class="toc-text">RDD的算子</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#Transformation"><span class="toc-number">2.1.</span> <span class="toc-text">Transformation</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Action"><span class="toc-number">2.2.</span> <span class="toc-text">Action</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#常用算子实例"><span class="toc-number">2.3.</span> <span class="toc-text">常用算子实例</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#RDD的缓存机制"><span class="toc-number">3.</span> <span class="toc-text">RDD的缓存机制</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#RDD的Checkpoint容错机制"><span class="toc-number">4.</span> <span class="toc-text">RDD的Checkpoint容错机制</span></a></li></ol></div></div><div class="author-info hide"><div class="author-info__avatar text-center"><img src="https://vinxikk.github.io/img/avatar.png"></div><div class="author-info__name text-center">VinxC</div><div class="author-info__description text-center">A Bigdata Developer</div><hr><div class="author-info-articles"><a class="author-info-articles__archives article-meta" href="/archives"><span class="pull-left">Articles</span><span class="pull-right">61</span></a><a class="author-info-articles__tags article-meta" href="/tags"><span class="pull-left">Tags</span><span class="pull-right">85</span></a><a class="author-info-articles__categories article-meta" href="/categories"><span class="pull-left">Categories</span><span class="pull-right">14</span></a></div><hr><div class="author-info-links"><div class="author-info-links__title text-center">Links</div><a class="author-info-links__name text-center" href="https://molunerfinn.com" target="_blank" rel="noopener">Molunerfinn</a></div></div></div><div id="content-outer"><div class="no-bg" id="top-container"><div id="page-header"><span class="pull-left"> <a id="site-name" href="/">VinxC's blog</a></span><i class="fa fa-bars toggle-menu pull-right" aria-hidden="true"></i><span class="pull-right menus"><a class="site-page social-icon search"><i class="fa fa-search"></i><span> Search</span></a><a class="site-page" href="/">Home</a><a class="site-page" href="/archives">Archives</a><a class="site-page" href="/tags">Tags</a><a class="site-page" href="/categories">Categories</a></span></div><div id="post-info"><div id="post-title">RDD的常用算子&amp;persist/cache缓存机制&amp;checkpoint容错机制</div><div id="post-meta"><time class="post-meta__date"><i class="fa fa-calendar" aria-hidden="true"></i> 2018-05-19</time><span class="post-meta__separator">|</span><i class="fa fa-inbox post-meta__icon" aria-hidden="true"></i><a class="post-meta__categories" href="/categories/Spark/">Spark</a><div class="post-meta-wordcount"><span>Word count: </span><span class="word-count">2.5k</span><span class="post-meta__separator">|</span><span>Reading time: 9 min</span></div></div></div></div><div class="layout" id="content-inner"><article id="post"><div class="article-container" id="post-content"><h3 id="RDD的基本概念"><a href="#RDD的基本概念" class="headerlink" title="RDD的基本概念"></a>RDD的基本概念</h3><h4 id="什么是RDD"><a href="#什么是RDD" class="headerlink" title="什么是RDD"></a>什么是RDD</h4><p>RDD（Resilient Distributed Dataset）叫做弹性分布式数据集，是Spark中最基本的数据抽象，它代表一个不可变、可分区、里面的元素可并行计算的集合。</p>
+<p>RDD具有数据流模型的特点：自动容错、位置感知性调度和可伸缩性。</p>
+<p>RDD允许用户在执行多个查询时显式地将工作集缓存在内存中，后续的查询能够重用工作集，这极大地提升了查询速度。</p>
+<h4 id="RDD的属性"><a href="#RDD的属性" class="headerlink" title="RDD的属性"></a>RDD的属性</h4><p><img src="https://vinxikk.github.io/img/spark/rdd-properties.png" alt="RDD的属性"></p>
+<ul>
+<li><p>一组分片（Partition）</p>
+<p>即数据集的基本组成单位。对于RDD来说，每个分片都会被一个计算任务处理，并决定并行计算的粒度。用户可以在创建RDD时指定RDD的分片个数，如果没有指定，那么就会采用默认值。默认值就是程序所分配到的CPU Core的数目。</p>
+</li>
+<li><p>一个计算每个分区的函数</p>
+<p>Spark中RDD的计算是以分片为单位的，每个RDD都会实现compute函数以达到这个目的。compute函数会对迭代器进行复合，不需要保存每次计算的结果。</p>
+</li>
+<li><p>RDD之间的依赖关系</p>
+<p>RDD的每次转换都会生成一个新的RDD，所以RDD之间就会形成类似于流水线一样的前后依赖关系。在部分分区数据丢失时，Spark可以通过这个依赖关系重新计算丢失的分区数据，而不是对RDD的所有分区进行重新计算。</p>
+</li>
+<li><p>一个Partitioner，即RDD的分片函数</p>
+<p>当前Spark中实现了两种类型的分片函数，一个是基于哈希的HashPartitioner，另外一个是基于范围的RangePartitioner。只有对于key-value的RDD，才会有Partitioner，非key-value的RDD的Partitioner的值是None。Partitioner函数不但决定了RDD本身的分片数量，也决定了parent RDD Shuffle输出时的分片数量。</p>
+</li>
+<li><p>一个列表</p>
+<p>存储每个Partition的优先位置（preferred location）。对于一个HDFS文件来说，这个列表保存的就是每个Partition所在的块的位置。按照“移动数据不如移动计算”的理念，Spark在进行任务调度的时候，会尽可能地将计算任务分配到其所要处理数据块的存储位置。</p>
+</li>
+</ul>
+<h4 id="RDD的创建方式"><a href="#RDD的创建方式" class="headerlink" title="RDD的创建方式"></a>RDD的创建方式</h4><ul>
+<li><p>通过外部的数据文件创建，如HDFS</p>
+<p><code>val rdd1 = sc.textFile(“hdfs://192.168.xxx.xxx:9000/data/data.txt”)</code></p>
+</li>
+<li><p>通过<code>sc.parallelize</code>进行创建</p>
+<p><code>val rdd1 = sc.parallelize(Array(1,2,3,4,5,6,7,8))</code></p>
+</li>
+<li><p>RDD的类型</p>
+<p>Transformation和Action</p>
+</li>
+</ul>
+<h4 id="RDD的基本原理"><a href="#RDD的基本原理" class="headerlink" title="RDD的基本原理"></a>RDD的基本原理</h4><p><img src="https://vinxikk.github.io/img/spark/rdd-parallelize.png" alt="RDD的并行原理"></p>
+<h3 id="RDD的算子"><a href="#RDD的算子" class="headerlink" title="RDD的算子"></a>RDD的算子</h3><h4 id="Transformation"><a href="#Transformation" class="headerlink" title="Transformation"></a>Transformation</h4><p>RDD中的所有转换都是延迟加载的，也就是说，它们并不会直接计算结果。</p>
+<p>相反的，它们只是记住这些应用到基础数据集（例如一个文件）上的转换动作。</p>
+<p>只有当发生一个要求返回结果给Driver的动作时，这些转换才会真正运行。</p>
+<p>这种设计让Spark更加有效率地运行。</p>
+<ul>
+<li><p><code>map(func)</code></p>
+<p>返回一个新的RDD，该RDD由每一个输入元素经过func函数转换后组成</p>
+</li>
+<li><p><code>filter(func)</code></p>
+<p>返回一个新的RDD，该RDD由经过func函数计算后返回值为true的输入元素组成</p>
+</li>
+<li><p><code>flatMap(func)</code></p>
+<p>类似于map，但是每一个输入元素可以被映射为0或多个输出元素（所以func应该返回一个序列，而不是单一元素）</p>
+</li>
+<li><p><code>mapPartitions(func)</code></p>
+<p>类似于map，但独立地在RDD的每一个分片上运行，因此在类型为T的RDD上运行时，func的函数类型必须是Iterator[T] =&gt; Iterator[U]</p>
+</li>
+<li><p><code>mapPartitionsWithIndex(func)</code></p>
+<p>类似于mapPartitions，但func带有一个整数参数表示分片的索引值，因此在类型为T的RDD上运行时，func的函数类型必须是(Int, Interator[T]) =&gt; Iterator[U]</p>
+</li>
+<li><p><code>sample((withReplacement, fraction, seed)</code></p>
+<p>根据fraction指定的比例对数据进行采样，可以选择是否使用随机数进行替换，seed用于指定随机数生成器种子</p>
+</li>
+<li><p><code>union(otherDataset)</code></p>
+<p>对源RDD和参数RDD求并集后返回一个新的RDD</p>
+</li>
+<li><p><code>intersection(otherDataset)</code></p>
+<p>对源RDD和参数RDD求交集后返回一个新的RDD</p>
+</li>
+<li><p><code>distinct([numTasks])</code></p>
+<p>对源RDD进行去重后返回一个新的RDD</p>
+</li>
+<li><p><code>groupByKey([numTasks])</code></p>
+<p>在一个(K,V)的RDD上调用，返回一个(K,Iterator[V])的RDD</p>
+</li>
+<li><p><code>reduceByKey(func,[numTasks])</code></p>
+<p>在一个(K,V)的RDD上调用，返回一个(K,V)的RDD，使用指定的reduce函数，将相同key的值聚合到一起，与<code>groupByKey</code>类似，reduce任务的个数可以通过第二个可选的参数来设置</p>
+</li>
+<li><p><code>aggregateByKey(zeroValue)(seqOp,combOp,[numTasks])</code></p>
+</li>
+<li><p><code>sortByKey([ascending], [numTasks])</code></p>
+<p>在一个(K,V)的RDD上调用，K必须实现Ordered接口，返回一个按照key进行排序的(K,V)的RDD</p>
+</li>
+<li><p><code>sortBy(func,[ascending], [numTasks])</code></p>
+<p>与sortByKey类似，但是更灵活</p>
+</li>
+<li><p><code>join(otherDataset, [numTasks])</code></p>
+<p>在类型为(K,V)和(K,W)的RDD上调用，返回一个相同key对应的所有元素对在一起的(K,(V,W))的RDD</p>
+</li>
+<li><p><code>cogroup(otherDataset, [numTasks])</code></p>
+<p>在类型为(K,V)和(K,W)的RDD上调用，返回一个<code>(K,(Iterable&lt;V&gt;,Iterable&lt;W&gt;))</code>类型的RDD</p>
+</li>
+<li><p><code>cartesian(otherDataset)</code></p>
+<p>笛卡尔积</p>
+</li>
+<li><p><code>pipe(command, [envVars])</code></p>
+</li>
+<li><p><code>coalesce(numPartitions)</code></p>
+</li>
+<li><p><code>repartition(numPartitions)</code></p>
+</li>
+<li><p><code>repartitionAndSortWithinPartitions(partitioner)</code></p>
+</li>
+</ul>
+<h4 id="Action"><a href="#Action" class="headerlink" title="Action"></a>Action</h4><ul>
+<li><p><code>reduce(func)</code></p>
+<p>通过func函数聚集RDD中的所有元素，这个功能必须是可交换且可并联的</p>
+</li>
+<li><p><code>collect()</code></p>
+<p>在驱动程序中，以数组的形式返回数据集的所有元素</p>
+</li>
+<li><p><code>count()</code></p>
+<p>返回RDD的元素个数</p>
+</li>
+<li><p><code>first()</code></p>
+<p>返回RDD的第一个元素（类似于take(1)）</p>
+</li>
+<li><p><code>take(n)</code></p>
+<p>返回一个由数据集的前n个元素组成的数组</p>
+</li>
+<li><p><code>takeSample(withReplacement,num, [seed])</code></p>
+<p>返回一个数组，该数组由从数据集中随机采样的num个元素组成，可以选择是否用随机数替换不足的部分，seed用于指定随机数生成器种子</p>
+</li>
+<li><p><code>takeOrdered(n, [ordering])</code></p>
+</li>
+<li><p><code>saveAsTextFile(path)</code></p>
+<p>将数据集的元素以textfile的形式保存到HDFS文件系统或者其他支持的文件系统，对于每个元素，Spark会调用toString方法，将它转换为文件中的文本</p>
+</li>
+<li><p><code>saveAsSequenceFile(path)</code></p>
+<p>将数据集中的元素以Hadoop sequencefile的格式保存到指定的目录下，可以是HDFS或其他Hadoop支持的文件系统</p>
+</li>
+<li><p><code>saveAsObjectFile(path)</code></p>
+</li>
+<li><p><code>countByKey()</code></p>
+<p>针对(K,V)类型的RDD，返回一个(K,Int)的map，表示每一个key对应的元素个数</p>
+</li>
+<li><p><code>foreach(func)</code></p>
+<p>在数据集的每一个元素上，运行函数func进行更新</p>
+</li>
+</ul>
+<h4 id="常用算子实例"><a href="#常用算子实例" class="headerlink" title="常用算子实例"></a>常用算子实例</h4><p>Transformation算子：</p>
+<ul>
+<li><p><code>map(func)</code>:  将输入的每个元素重写组合成一个元组</p>
+<p>通过sc.parallelize创建RDD：</p>
+<p><code>val rdd1 = sc.parallelize(Array(1,2,3,4,5,6,7,8))</code></p>
+<p>返回一个(K,*)格式的元组：</p>
+<p><code>val rdd2 = rdd1.map((_,&quot;*&quot;))</code></p>
+<p>每个元素乘以10：</p>
+<p><code>val rdd2 = rdd1.map(_ * 10)</code></p>
+<p>每个元素加上10：</p>
+<p><code>val rdd2 = rdd1.map((x:Int) =&gt; x + 10)</code></p>
+</li>
+<li><p><code>filter(func)</code>:  返回一个新的RDD，该RDD是经过func运算后返回true的元素</p>
+<p><code>val rdd3 = rdd1.filter(_ &gt; 5)</code></p>
+</li>
+<li><p><code>flatMap(func)</code>:  压平操作</p>
+<p><code>val books = sc.parallelize(List(&quot;Hadoop&quot;,&quot;Hive&quot;,&quot;HDFS&quot;))</code></p>
+<p><code>books.flatMap(_.toList).collect</code></p>
+<p>结果：</p>
+<p><code>res12: Array[Char] = Array(H, a, d, o, o, p, H, i, v, e, H, D, F, S)</code></p>
+</li>
+<li><p><code>union(otherDataset)</code>:  并集运算，类型要一致</p>
+<p><code>val rdd4 = sc.parallelize(List(4,5,6,4,7))</code></p>
+<p><code>val rdd5 = sc.parallelize(List(1,2,3,4))</code></p>
+<p><code>val rdd6 = rdd4.union(rdd5)</code></p>
+</li>
+<li><p><code>intersection(otherDataset)</code>:  交集</p>
+<p><code>val rdd7 = rdd5.intersection(rdd4)</code></p>
+</li>
+<li><p><code>distinct([numTasks])</code>: 去掉重复数据</p>
+<p><code>val rdd8 = sc.parallelize(List(5,6,7,5,5,5))</code></p>
+<p><code>rdd8.distinct.collect</code></p>
+<p>结果：</p>
+<p><code>res15: Array[Int] = Array(6, 7, 5)</code></p>
+</li>
+<li><p><code>groupByKey([numTasks])</code>:  对于一个&lt;k,v&gt;的RDD，按照key进行分组</p>
+<p><code>val rdd = sc.parallelize(Array((&quot;I&quot;,1),(&quot;love&quot;,2),(&quot;I&quot;,3)))</code></p>
+<p><code>rdd.groupByKey.collect</code></p>
+<p>结果：</p>
+<p><code>res16: Array[(String, Iterable[Int])] = Array((love,CompactBuffer(2)), (I,CompactBuffer(1, 3)))</code></p>
+</li>
+<li><p><code>flatMap</code> + <code>groupByKey</code></p>
+<p><code>val strings = sc.parallelize(List(&quot;I love Beijing&quot;,&quot;I love China&quot;,&quot;Beijing is the capital of China&quot;))</code></p>
+<p><code>strings.flatMap(_.split(&quot; &quot;)).map((_,1)).groupByKey.collect</code></p>
+<p>结果：</p>
+<p><code>res17: Array[(String, Iterable[Int])] = Array((is,CompactBuffer(1)), (love,CompactBuffer(1, 1)), (capital,CompactBuffer(1)), (Beijing,CompactBuffer(1, 1)), (China,CompactBuffer(1, 1)), (I,CompactBuffer(1, 1)), (of,CompactBuffer(1)), (the,CompactBuffer(1)))</code></p>
+</li>
+<li><p>reduceByKey(func, [numTasks]):  类似于groupByKey，区别是reduceByKey会有一个combiner的过程，对每个分区上的数据先做一次合并，所以效率更高</p>
+</li>
+<li><p><code>cartesian</code>:  笛卡尔积</p>
+<p><code>val rdd1 = sc.parallelize(List(&quot;tom&quot;, &quot;jerry&quot;))</code></p>
+<p><code>val rdd2 = sc.parallelize(List(&quot;tom&quot;, &quot;kitty&quot;, &quot;shuke&quot;))</code></p>
+<p><code>val rdd3 = rdd1.cartesian(rdd2)</code></p>
+</li>
+</ul>
+<p>Action算子：</p>
+<p><code>val rdd1 = sc.parallelize(List(1,2,3,4,5), 2)</code></p>
+<ul>
+<li><p><code>collect</code></p>
+<p><code>rdd1.collect</code></p>
+</li>
+<li><p><code>reduce</code></p>
+<p><code>val rdd2 = rdd1.reduce(_+_)</code></p>
+</li>
+<li><p><code>count</code></p>
+<p><code>rdd1.count</code></p>
+</li>
+<li><p><code>top</code></p>
+<p><code>rdd1.top(2)</code></p>
+</li>
+<li><p><code>take</code></p>
+<p><code>rdd1.take(2)</code></p>
+</li>
+<li><p><code>first:  similar to take(1)</code></p>
+<p><code>rdd1.first</code></p>
+</li>
+<li><p><code>takeOrdered</code></p>
+<p><code>rdd1.takeOrdered(3)</code></p>
+</li>
+</ul>
+<h3 id="RDD的缓存机制"><a href="#RDD的缓存机制" class="headerlink" title="RDD的缓存机制"></a>RDD的缓存机制</h3><p>RDD通过persist方法或cache方法可以将前面的计算结果缓存，但是并不是这两个方法被调用时立即缓存，而是触发后面的action时，该RDD将会被缓存在计算节点的内存中，并供后面重用。</p>
+<p><img src="https://vinxikk.github.io/img/spark/rdd-persist-cache.png" alt="RDD的persist和cache"></p>
+<p>查看源码发现cache最终也是调用了persist方法，默认的存储级别都是仅在内存存储一份，Spark的存储级别还有好多种，存储级别在<code>object StorageLevel</code>中定义。</p>
+<p><img src="https://vinxikk.github.io/img/spark/storage-level.png" alt="存储级别"></p>
+<p>缓存有可能丢失，或者存储于内存的数据由于内存不足而被删除，RDD的缓存容错机制保证了即使缓存丢失也能保证计算的正确执行。</p>
+<p>通过基于RDD的一系列转换，丢失的数据会被重算，由于RDD的各个Partition是相对独立的，因此只需要计算丢失的部分即可，并不需要重算全部Partition。</p>
+<p>示例说明：</p>
+<p><img src="https://vinxikk.github.io/img/spark/rdd-cache-demo.png" alt="cache实例应用"></p>
+<p>通过Web UI进行监控：</p>
+<p><img src="https://vinxikk.github.io/img/spark/rdd-cache-demo-ui.png" alt="cache Job的UI界面"></p>
+<h3 id="RDD的Checkpoint容错机制"><a href="#RDD的Checkpoint容错机制" class="headerlink" title="RDD的Checkpoint容错机制"></a>RDD的Checkpoint容错机制</h3><p>检查点（本质是通过将RDD写入Disk做检查点）是为了通过lineage（血统）做容错的辅助，lineage过长会造成容错成本过高，这样就不如在中间阶段做检查点容错，如果之后有节点出现问题而丢失分区，从做检查点的RDD开始重做Lineage，就会减少开销。</p>
+<p>设置checkpoint的目录，可以是本地的文件夹、也可以是HDFS。一般是在具有容错能力，高可靠的文件系统上(比如HDFS, S3等)设置一个检查点路径，用于保存检查点数据。</p>
+<p>本地目录（这种模式，需要将spark-shell运行在本地模式上）：</p>
+<p><img src="https://vinxikk.github.io/img/spark/rdd-checkpoint-local.png" alt="基于本地目录的checkpoint"></p>
+<p>HDFS的目录（这种模式，需要将spark-shell运行在集群模式上）：</p>
+<p><img src="https://vinxikk.github.io/img/spark/rdd-checkpoint-hdfs.png" alt="基于HDFS的checkpoint"></p>
+<p>checkpoint源码：</p>
+<p><img src="https://vinxikk.github.io/img/spark/rdd-checkpoint-source.png" alt="checkpoint源码"></p>
+</div></article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">Author: </span><span class="post-copyright-info"><a href="mailto:undefined" target="_blank" rel="noopener">VinxC</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">Link: </span><span class="post-copyright-info"><a href="/https:/vinxikk.github.io/2018/05/19/spark/spark-core/">https://vinxikk.github.io/2018/05/19/spark/spark-core/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">Copyright Notice: </span><span class="post-copyright-info">All articles in this blog are licensed under <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank" rel="noopener">CC BY-NC-SA 4.0</a> unless stating additionally.</span></div></div><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/Spark/">Spark</a></div><nav id="pagination"><div class="prev-post pull-left"><a href="/2018/05/20/spark/spark-basic/"><i class="fa fa-chevron-left">  </i><span>Spark架构和部署&amp;WordCount原理</span></a></div><div class="next-post pull-right"><a href="/2018/05/17/hive/hive-ql-principle/"><span>Hive SQL的底层执行原理</span><i class="fa fa-chevron-right"></i></a></div></nav></div></div><footer><div class="layout" id="footer"><div class="copyright">&copy;2017 - 2020 By VinxC</div><div class="framework-info"><span>Driven - </span><a href="http://hexo.io" target="_blank" rel="noopener"><span>Hexo</span></a><span class="footer-separator">|</span><span>Theme - </span><a href="https://github.com/Molunerfinn/hexo-theme-melody" target="_blank" rel="noopener"><span>Melody</span></a></div><div class="busuanzi"><script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><span id="busuanzi_container_page_pv"><i class="fa fa-file-o"></i><span id="busuanzi_value_page_pv"></span><span></span></span></div></div></footer><i class="fa fa-arrow-up" id="go-up" aria-hidden="true"></i><script src="https://cdn.jsdelivr.net/npm/animejs@latest/anime.min.js"></script><script src="https://cdn.jsdelivr.net/npm/jquery@latest/dist/jquery.min.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@latest/dist/jquery.fancybox.min.js"></script><script src="https://cdn.jsdelivr.net/npm/velocity-animate@latest/velocity.min.js"></script><script src="https://cdn.jsdelivr.net/npm/velocity-ui-pack@latest/velocity.ui.min.js"></script><script src="/js/utils.js?version=1.6.1"></script><script src="/js/fancybox.js?version=1.6.1"></script><script src="/js/sidebar.js?version=1.6.1"></script><script src="/js/copy.js?version=1.6.1"></script><script src="/js/fireworks.js?version=1.6.1"></script><script src="/js/transition.js?version=1.6.1"></script><script src="/js/scroll.js?version=1.6.1"></script><script src="/js/head.js?version=1.6.1"></script><script src="/js/search/local-search.js"></script><script>if(/Android|webOS|iPhone|iPod|BlackBerry/i.test(navigator.userAgent)) {
+  $('#nav').addClass('is-mobile')
+  $('footer').addClass('is-mobile')
+}</script><div class="search-dialog" id="local-search"><div class="search-dialog__title" id="local-search-title">Local search</div><div id="local-input-panel"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="Search for Posts"></div></div></div><hr><div id="local-search-results"><div id="local-hits"></div><div id="local-stats"><div class="local-search-stats__hr" id="hr"><span>Powered by</span> <a href="https://github.com/wzpan/hexo-generator-search" target="_blank" rel="noopener" style="color:#49B1F5;">hexo-generator-search</a></div></div></div><span class="search-close-button"><i class="fa fa-times"></i></span></div><div class="search-mask"></div></body></html>
