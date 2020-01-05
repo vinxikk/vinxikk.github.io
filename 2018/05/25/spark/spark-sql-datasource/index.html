@@ -1,0 +1,108 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"><meta name="description" content="Spark SQL常用数据源"><meta name="keywords" content="Spark"><meta name="author" content="VinxC"><meta name="copyright" content="VinxC"><title>Spark SQL常用数据源 | VinxC's blog</title><link rel="shortcut icon" href="/melody-favicon.ico"><link rel="stylesheet" href="/css/index.css?version=1.6.1"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome@latest/css/font-awesome.min.css?version=1.6.1"><link rel="dns-prefetch" href="https://cdn.staticfile.org"><link rel="dns-prefetch" href="https://cdn.bootcss.com"><link rel="dns-prefetch" href="https://creativecommons.org"><script>var GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"search.xml","languages":{"hits_empty":"We didn't find any results for the search: ${query}"}},
+  copy: {
+    success: 'Copy successfully',
+    error: 'Copy error',
+    noSupport: 'The browser does not support'
+  }
+} </script></head><body><canvas class="fireworks"></canvas><i class="fa fa-arrow-right" id="toggle-sidebar" aria-hidden="true"></i><div id="sidebar"><div class="toggle-sidebar-info text-center"><span data-toggle="Toggle article">Toggle site</span><hr></div><div class="sidebar-toc"><div class="sidebar-toc__title">Catalog</div><div class="sidebar-toc__progress"><span class="progress-notice">You've read</span><span class="progress-num">0</span><span class="progress-percentage">%</span><div class="sidebar-toc__progress-bar"></div></div><div class="sidebar-toc__content"><ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#通用的Load-Save函数"><span class="toc-number">1.</span> <span class="toc-text">通用的Load/Save函数</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#什么是parquet文件"><span class="toc-number">1.1.</span> <span class="toc-text">什么是parquet文件</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Load-Save函数"><span class="toc-number">1.2.</span> <span class="toc-text">Load/Save函数</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#显式加载json格式文件"><span class="toc-number">1.3.</span> <span class="toc-text">显式加载json格式文件</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#存储模式（Save-Mode）"><span class="toc-number">1.4.</span> <span class="toc-text">存储模式（Save Mode）</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#将结果保存为表"><span class="toc-number">1.5.</span> <span class="toc-text">将结果保存为表</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#parquet文件"><span class="toc-number">2.</span> <span class="toc-text">parquet文件</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#schema的合并"><span class="toc-number">2.1.</span> <span class="toc-text">schema的合并</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#JSON-Dataset"><span class="toc-number">3.</span> <span class="toc-text">JSON Dataset</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#使用JDBC"><span class="toc-number">4.</span> <span class="toc-text">使用JDBC</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#使用Hive-Table"><span class="toc-number">5.</span> <span class="toc-text">使用Hive Table</span></a></li></ol></div></div><div class="author-info hide"><div class="author-info__avatar text-center"><img src="https://vinxikk.github.io/img/avatar.png"></div><div class="author-info__name text-center">VinxC</div><div class="author-info__description text-center">A Bigdata Developer</div><hr><div class="author-info-articles"><a class="author-info-articles__archives article-meta" href="/archives"><span class="pull-left">Articles</span><span class="pull-right">66</span></a><a class="author-info-articles__tags article-meta" href="/tags"><span class="pull-left">Tags</span><span class="pull-right">86</span></a><a class="author-info-articles__categories article-meta" href="/categories"><span class="pull-left">Categories</span><span class="pull-right">14</span></a></div><hr><div class="author-info-links"><div class="author-info-links__title text-center">Links</div><a class="author-info-links__name text-center" href="https://molunerfinn.com" target="_blank" rel="noopener">Molunerfinn</a></div></div></div><div id="content-outer"><div class="no-bg" id="top-container"><div id="page-header"><span class="pull-left"> <a id="site-name" href="/">VinxC's blog</a></span><i class="fa fa-bars toggle-menu pull-right" aria-hidden="true"></i><span class="pull-right menus"><a class="site-page social-icon search"><i class="fa fa-search"></i><span> Search</span></a><a class="site-page" href="/">Home</a><a class="site-page" href="/archives">Archives</a><a class="site-page" href="/tags">Tags</a><a class="site-page" href="/categories">Categories</a></span></div><div id="post-info"><div id="post-title">Spark SQL常用数据源</div><div id="post-meta"><time class="post-meta__date"><i class="fa fa-calendar" aria-hidden="true"></i> 2018-05-25</time><span class="post-meta__separator">|</span><i class="fa fa-inbox post-meta__icon" aria-hidden="true"></i><a class="post-meta__categories" href="/categories/Spark/">Spark</a><div class="post-meta-wordcount"><span>Word count: </span><span class="word-count">1.1k</span><span class="post-meta__separator">|</span><span>Reading time: 4 min</span></div></div></div></div><div class="layout" id="content-inner"><article id="post"><div class="article-container" id="post-content"><h3 id="通用的Load-Save函数"><a href="#通用的Load-Save函数" class="headerlink" title="通用的Load/Save函数"></a>通用的Load/Save函数</h3><h4 id="什么是parquet文件"><a href="#什么是parquet文件" class="headerlink" title="什么是parquet文件"></a>什么是parquet文件</h4><p>Parquet是列式存储格式的一种文件类型，列式存储有以下的核心：</p>
+<ul>
+<li>可以跳过不符合条件的数据，只读取需要的数据，降低IO数据量。</li>
+<li>压缩编码可以降低磁盘存储空间。由于同一列的数据类型是一样的，可以使用更高效的压缩编码（例如，Run Length Encoding和Delta Encoding），进一步节约存储空间。</li>
+<li>只读取需要的列，支持向量运算，能够获取更好的扫描性能。</li>
+<li>Parquet格式是Spark SQL的默认数据源，可通过<code>spark.sql.sources.default</code>配置</li>
+</ul>
+<h4 id="Load-Save函数"><a href="#Load-Save函数" class="headerlink" title="Load/Save函数"></a>Load/Save函数</h4><p>读取parquet文件：</p>
+<p><code>val usersDF = spark.read.load(&quot;/root/data/users.parquet&quot;)</code></p>
+<p>查询schema和数据：</p>
+<p><img src="https://vinxikk.github.io/img/spark/sql-datasource-schema-show.png" alt="查看schema和数据"></p>
+<p>查询用户的name和喜好颜色，并保存：</p>
+<p><code>usersDF.select($&quot;name&quot;,$&quot;favorite_color&quot;).write.save(&quot;/root/result/parquet&quot;)</code></p>
+<p>验证结果：</p>
+<p><img src="https://vinxikk.github.io/img/spark/sql-datasource-verify-result.png" alt="读取保存的parquet文件"></p>
+<h4 id="显式加载json格式文件"><a href="#显式加载json格式文件" class="headerlink" title="显式加载json格式文件"></a>显式加载json格式文件</h4><p>直接加载：<code>val usersDF = spark.read.load(&quot;/home/vinx/data/people.json&quot;)</code>，会出错。</p>
+<p>正确方式：<code>val usersDF = spark.read.format(&quot;json&quot;).load(&quot;/home/vinx/data/people.json&quot;)</code></p>
+<h4 id="存储模式（Save-Mode）"><a href="#存储模式（Save-Mode）" class="headerlink" title="存储模式（Save Mode）"></a>存储模式（Save Mode）</h4><p>可以采用SaveMode执行存储操作，SaveMode定义了对数据的处理模式。需要注意的是，这些保存模式不使用任何锁定，不是原子操作。此外，当使用Overwrite方式执行时，在输出新数据之前原数据就已经被删除。</p>
+<p>SaveMode详细介绍如下表：</p>
+<p><img src="https://vinxikk.github.io/img/spark/sql-datasource-save-mode.png" alt="Save Mode"></p>
+<p>示例：</p>
+<p><code>usersDF.select($&quot;name&quot;).write.save(&quot;/root/result/parquet1&quot;)</code>，出错，因为/root/result/parquet1已经存在。</p>
+<p>正确方式：<code>usersDF.select($&quot;name&quot;).write.mode(&quot;overwrite&quot;).save(&quot;/root/result/parquet1&quot;)</code></p>
+<h4 id="将结果保存为表"><a href="#将结果保存为表" class="headerlink" title="将结果保存为表"></a>将结果保存为表</h4><p><code>usersDF.select($&quot;name&quot;).write.saveAsTable(&quot;table1&quot;)</code></p>
+<p>也可以进行分区、分桶等操作：<code>partitionBy</code>、<code>bucketBy</code>。</p>
+<h3 id="parquet文件"><a href="#parquet文件" class="headerlink" title="parquet文件"></a>parquet文件</h3><p>Parquet是一个列格式而且用于多个数据处理系统中。Spark SQL提供支持对于Parquet文件的读写，也就是自动保存原始数据的schema。当写Parquet文件时，所有的列被自动转化为nullable，因为兼容性的缘故。</p>
+<p>案例：</p>
+<p>读入json格式的数据，将其转换成parquet格式，并创建相应的表来使用SQL进行查询。</p>
+<p><img src="https://vinxikk.github.io/img/spark/sql-datasource-parquet-demo.png" alt="parquet文件案例"></p>
+<h4 id="schema的合并"><a href="#schema的合并" class="headerlink" title="schema的合并"></a>schema的合并</h4><p>parquet支持schema evolution（schema演变，即：合并）。用户可以先定义一个简单的schema，然后逐渐的向schema中增加列描述。通过这种方式，用户可以获取多个有不同schema但相互兼容的parquet文件。</p>
+<p><img src="https://vinxikk.github.io/img/spark/sql-datasource-parquet-schema-evolution.png" alt="parquet文件schema的合并"></p>
+<h3 id="JSON-Dataset"><a href="#JSON-Dataset" class="headerlink" title="JSON Dataset"></a>JSON Dataset</h3><p>Spark SQL能自动解析JSON数据集的schema，读取JSON数据集为DataFrame格式。读取JSON数据集方法为<code>SQLContext.read().json()</code>。该方法将string格式的RDD或JSON文件转换为DataFrame。</p>
+<p>需要注意的是，这里的JSON文件不是常规的JSON格式。JSON文件每一行必须包含一个独立的、自满足有效的JSON对象。如果用多行描述一个JSON对象，会导致读取出错。读取JSON数据集示例如下：</p>
+<p>定义路径：</p>
+<p><code>val path =&quot;/home/vinx/data/people.json&quot;</code></p>
+<p>读取json文件，生成DataFrame：</p>
+<p><code>val peopleDF = spark.read.json(path)</code></p>
+<p>打印schema结构信息：</p>
+<p><code>peopleDF.printSchema()</code></p>
+<p>创建临时视图：</p>
+<p><code>peopleDF.createOrReplaceTempView(&quot;people&quot;)</code></p>
+<p>执行查询：</p>
+<p><code>spark.sql(&quot;SELECT name FROM people WHERE age=19&quot;).show</code></p>
+<h3 id="使用JDBC"><a href="#使用JDBC" class="headerlink" title="使用JDBC"></a>使用JDBC</h3><p>Spark SQL同样支持通过JDBC读取其他数据库的数据作为数据源。</p>
+<p>Demo演示：使用Spark SQL读取Oracle数据库中的表。</p>
+<p>启动Spark Shell的时候，指定Oracle数据库的驱动：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span></pre></td><td class="code"><pre><span class="line">spark-shell \</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">2</span></pre></td><td class="code"><pre><span class="line">--master spark://rshost001:7077 \       </span></pre></td></tr><tr><td class="gutter"><pre><span class="line">3</span></pre></td><td class="code"><pre><span class="line">--jars /home/vinx/jars/ojdbc6.jar \        </span></pre></td></tr><tr><td class="gutter"><pre><span class="line">4</span></pre></td><td class="code"><pre><span class="line">--driver-class-path /home/vinx/jars/ojdbc6.jar</span></pre></td></tr></table></figure>
+
+<p>读取Oracle数据库中的数据：</p>
+<p><img src="https://vinxikk.github.io/img/spark/sql-datasource-oracle-property.png" alt="Oracle属性说明"></p>
+<p><strong>方式一：</strong></p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span></pre></td><td class="code"><pre><span class="line"><span class="keyword">val</span> oracleDF = spark.read.format(<span class="string">"jdbc"</span>)</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">2</span></pre></td><td class="code"><pre><span class="line">    .option(<span class="string">"url"</span>,<span class="string">"jdbc:oracle:thin:@192.168.xxx.xxx:1521/orcl.example.com"</span>)</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">3</span></pre></td><td class="code"><pre><span class="line">    .option(<span class="string">"dbtable"</span>,<span class="string">"vinx.emp"</span>)</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">4</span></pre></td><td class="code"><pre><span class="line">    .option(<span class="string">"user"</span>,<span class="string">"vinx"</span>)</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">5</span></pre></td><td class="code"><pre><span class="line">    .option(<span class="string">"password"</span>,<span class="string">"123456"</span>)</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">6</span></pre></td><td class="code"><pre><span class="line">    .load</span></pre></td></tr></table></figure>
+
+<p><strong>方式二：</strong></p>
+<p>导入需要的类：</p>
+<p><code>import java.util.Properties</code>   </p>
+<p>定义属性：</p>
+<p><code>val oracleprops = new Properties()</code></p>
+<p><code>oracleprops.setProperty(&quot;user&quot;,&quot;vinx&quot;)</code></p>
+<p><code>oracleprops.setProperty(&quot;password&quot;,&quot;123456&quot;)</code></p>
+<p>读取数据：</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span></pre></td><td class="code"><pre><span class="line"><span class="keyword">val</span> oracleEmpDF = spark.read</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">2</span></pre></td><td class="code"><pre><span class="line">	.jdbc(</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">3</span></pre></td><td class="code"><pre><span class="line">        <span class="string">"jdbc:oracle:thin:@192.168.xxx.xxx:1521/orcl.example.com"</span>,</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">4</span></pre></td><td class="code"><pre><span class="line">        <span class="string">"vinx.emp"</span>,</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">5</span></pre></td><td class="code"><pre><span class="line">        oracleprops</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">6</span></pre></td><td class="code"><pre><span class="line">    )</span></pre></td></tr></table></figure>
+
+<h3 id="使用Hive-Table"><a href="#使用Hive-Table" class="headerlink" title="使用Hive Table"></a>使用Hive Table</h3><p>首先，搭建好Hive的环境（需要Hadoop）。</p>
+<p>配置Spark SQL支持Hive：</p>
+<ul>
+<li><p>将以下文件拷贝到<code>$SPARK_HOME/conf</code>的目录下</p>
+<p><code>$HIVE_HOME/conf/hive-site.xml</code></p>
+<p><code>$HADOOP_CONF_DIR/core-site.xml</code></p>
+<p><code>$HADOOP_CONF_DIR/hdfs-site.xml</code></p>
+</li>
+</ul>
+<p>使用Spark Shell操作Hive：</p>
+<ul>
+<li><p>启动Spark Shell的时候，需要使用–jars指定mysql的驱动程序</p>
+</li>
+<li><p>创建表</p>
+<p><code>spark.sql(&quot;create table test (key INT, value STRING) row format delimited fields terminated by &#39;,&#39;&quot;)</code></p>
+</li>
+<li><p>导入数据</p>
+<p><code>spark.sql(&quot;load data local path &#39;/home/vinx/data/test.txt&#39; into table test&quot;)</code></p>
+</li>
+<li><p>查询数据</p>
+<p><code>spark.sql(&quot;select * from test&quot;).show</code></p>
+</li>
+</ul>
+<p>使用spark-sql操作Hive：</p>
+<ul>
+<li><p>启动spark-sql的时候，需要使用–jars指定mysql的驱动程序</p>
+</li>
+<li><p>操作Hive</p>
+<p><code>show tables;</code></p>
+<p><code>select * from tb_name;</code></p>
+</li>
+</ul>
+</div></article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">Author: </span><span class="post-copyright-info"><a href="mailto:undefined" target="_blank" rel="noopener">VinxC</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">Link: </span><span class="post-copyright-info"><a href="/https:/vinxikk.github.io/2018/05/25/spark/spark-sql-datasource/">https://vinxikk.github.io/2018/05/25/spark/spark-sql-datasource/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">Copyright Notice: </span><span class="post-copyright-info">All articles in this blog are licensed under <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank" rel="noopener">CC BY-NC-SA 4.0</a> unless stating additionally.</span></div></div><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/Spark/">Spark</a></div><nav id="pagination"><div class="prev-post pull-left"><a href="/2018/05/27/spark/spark-sql-optimize/"><i class="fa fa-chevron-left">  </i><span>Spark SQL性能优化</span></a></div><div class="next-post pull-right"><a href="/2018/05/24/spark/spark-sql/"><span>Spark SQL基本概念&amp;DataFrame&amp;Dataset</span><i class="fa fa-chevron-right"></i></a></div></nav></div></div><footer><div class="layout" id="footer"><div class="copyright">&copy;2017 - 2020 By VinxC</div><div class="framework-info"><span>Driven - </span><a href="http://hexo.io" target="_blank" rel="noopener"><span>Hexo</span></a><span class="footer-separator">|</span><span>Theme - </span><a href="https://github.com/Molunerfinn/hexo-theme-melody" target="_blank" rel="noopener"><span>Melody</span></a></div><div class="busuanzi"><script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><span id="busuanzi_container_page_pv"><i class="fa fa-file-o"></i><span id="busuanzi_value_page_pv"></span><span></span></span></div></div></footer><i class="fa fa-arrow-up" id="go-up" aria-hidden="true"></i><script src="https://cdn.jsdelivr.net/npm/animejs@latest/anime.min.js"></script><script src="https://cdn.jsdelivr.net/npm/jquery@latest/dist/jquery.min.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@latest/dist/jquery.fancybox.min.js"></script><script src="https://cdn.jsdelivr.net/npm/velocity-animate@latest/velocity.min.js"></script><script src="https://cdn.jsdelivr.net/npm/velocity-ui-pack@latest/velocity.ui.min.js"></script><script src="/js/utils.js?version=1.6.1"></script><script src="/js/fancybox.js?version=1.6.1"></script><script src="/js/sidebar.js?version=1.6.1"></script><script src="/js/copy.js?version=1.6.1"></script><script src="/js/fireworks.js?version=1.6.1"></script><script src="/js/transition.js?version=1.6.1"></script><script src="/js/scroll.js?version=1.6.1"></script><script src="/js/head.js?version=1.6.1"></script><script src="/js/search/local-search.js"></script><script>if(/Android|webOS|iPhone|iPod|BlackBerry/i.test(navigator.userAgent)) {
+  $('#nav').addClass('is-mobile')
+  $('footer').addClass('is-mobile')
+}</script><div class="search-dialog" id="local-search"><div class="search-dialog__title" id="local-search-title">Local search</div><div id="local-input-panel"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="Search for Posts"></div></div></div><hr><div id="local-search-results"><div id="local-hits"></div><div id="local-stats"><div class="local-search-stats__hr" id="hr"><span>Powered by</span> <a href="https://github.com/wzpan/hexo-generator-search" target="_blank" rel="noopener" style="color:#49B1F5;">hexo-generator-search</a></div></div></div><span class="search-close-button"><i class="fa fa-times"></i></span></div><div class="search-mask"></div></body></html>
