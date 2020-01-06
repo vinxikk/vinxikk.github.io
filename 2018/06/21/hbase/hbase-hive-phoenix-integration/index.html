@@ -1,0 +1,202 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"><meta name="description" content="HBase与Hive、Phoenix的集成&amp;节点的管理"><meta name="keywords" content="HBase"><meta name="author" content="VinxC"><meta name="copyright" content="VinxC"><title>HBase与Hive、Phoenix的集成&amp;节点的管理 | VinxC's blog</title><link rel="shortcut icon" href="/melody-favicon.ico"><link rel="stylesheet" href="/css/index.css?version=1.6.1"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome@latest/css/font-awesome.min.css?version=1.6.1"><link rel="dns-prefetch" href="https://cdn.staticfile.org"><link rel="dns-prefetch" href="https://cdn.bootcss.com"><link rel="dns-prefetch" href="https://creativecommons.org"><script>var GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"search.xml","languages":{"hits_empty":"We didn't find any results for the search: ${query}"}},
+  copy: {
+    success: 'Copy successfully',
+    error: 'Copy error',
+    noSupport: 'The browser does not support'
+  }
+} </script></head><body><canvas class="fireworks"></canvas><i class="fa fa-arrow-right" id="toggle-sidebar" aria-hidden="true"></i><div id="sidebar"><div class="toggle-sidebar-info text-center"><span data-toggle="Toggle article">Toggle site</span><hr></div><div class="sidebar-toc"><div class="sidebar-toc__title">Catalog</div><div class="sidebar-toc__progress"><span class="progress-notice">You've read</span><span class="progress-num">0</span><span class="progress-percentage">%</span><div class="sidebar-toc__progress-bar"></div></div><div class="sidebar-toc__content"><ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#HBase与Hive的集成"><span class="toc-number">1.</span> <span class="toc-text">HBase与Hive的集成</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#HBase与Hive的对比"><span class="toc-number">1.1.</span> <span class="toc-text">HBase与Hive的对比</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#HBase与Hive集成使用"><span class="toc-number">1.2.</span> <span class="toc-text">HBase与Hive集成使用</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Sqoop集成：MySQL-to-HBase"><span class="toc-number">1.3.</span> <span class="toc-text">Sqoop集成：MySQL to HBase</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#HBase集成Phoenix"><span class="toc-number">2.</span> <span class="toc-text">HBase集成Phoenix</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#Phoenix介绍"><span class="toc-number">2.1.</span> <span class="toc-text">Phoenix介绍</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Phoenix的使用"><span class="toc-number">2.2.</span> <span class="toc-text">Phoenix的使用</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#表映射"><span class="toc-number">2.3.</span> <span class="toc-text">表映射</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#节点的管理"><span class="toc-number">3.</span> <span class="toc-text">节点的管理</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#服役（commissioning）"><span class="toc-number">3.1.</span> <span class="toc-text">服役（commissioning）</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#退役（decommissioning）"><span class="toc-number">3.2.</span> <span class="toc-text">退役（decommissioning）</span></a></li></ol></li></ol></div></div><div class="author-info hide"><div class="author-info__avatar text-center"><img src="https://vinxikk.github.io/img/avatar.png"></div><div class="author-info__name text-center">VinxC</div><div class="author-info__description text-center">A Bigdata Developer</div><hr><div class="author-info-articles"><a class="author-info-articles__archives article-meta" href="/archives"><span class="pull-left">Articles</span><span class="pull-right">70</span></a><a class="author-info-articles__tags article-meta" href="/tags"><span class="pull-left">Tags</span><span class="pull-right">87</span></a><a class="author-info-articles__categories article-meta" href="/categories"><span class="pull-left">Categories</span><span class="pull-right">15</span></a></div><hr><div class="author-info-links"><div class="author-info-links__title text-center">Links</div><a class="author-info-links__name text-center" href="https://molunerfinn.com" target="_blank" rel="noopener">Molunerfinn</a></div></div></div><div id="content-outer"><div class="no-bg" id="top-container"><div id="page-header"><span class="pull-left"> <a id="site-name" href="/">VinxC's blog</a></span><i class="fa fa-bars toggle-menu pull-right" aria-hidden="true"></i><span class="pull-right menus"><a class="site-page social-icon search"><i class="fa fa-search"></i><span> Search</span></a><a class="site-page" href="/">Home</a><a class="site-page" href="/archives">Archives</a><a class="site-page" href="/tags">Tags</a><a class="site-page" href="/categories">Categories</a></span></div><div id="post-info"><div id="post-title">HBase与Hive、Phoenix的集成&amp;节点的管理</div><div id="post-meta"><time class="post-meta__date"><i class="fa fa-calendar" aria-hidden="true"></i> 2018-06-21</time><span class="post-meta__separator">|</span><i class="fa fa-inbox post-meta__icon" aria-hidden="true"></i><a class="post-meta__categories" href="/categories/HBase/">HBase</a><div class="post-meta-wordcount"><span>Word count: </span><span class="word-count">2k</span><span class="post-meta__separator">|</span><span>Reading time: 8 min</span></div></div></div></div><div class="layout" id="content-inner"><article id="post"><div class="article-container" id="post-content"><h3 id="HBase与Hive的集成"><a href="#HBase与Hive的集成" class="headerlink" title="HBase与Hive的集成"></a>HBase与Hive的集成</h3><h4 id="HBase与Hive的对比"><a href="#HBase与Hive的对比" class="headerlink" title="HBase与Hive的对比"></a>HBase与Hive的对比</h4><table>
+<thead>
+<tr>
+<th></th>
+<th>Hive</th>
+<th>HBase</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>特点</td>
+<td>类SQL数据仓库</td>
+<td>NoSQL (key - value)</td>
+</tr>
+<tr>
+<td>适用场景</td>
+<td>离线数据分析和清洗</td>
+<td>适合在线业务</td>
+</tr>
+<tr>
+<td>延迟</td>
+<td>延迟高</td>
+<td>延迟低</td>
+</tr>
+<tr>
+<td>存储位置</td>
+<td>存储在HDFS</td>
+<td>存储在HDFS</td>
+</tr>
+</tbody></table>
+<h4 id="HBase与Hive集成使用"><a href="#HBase与Hive集成使用" class="headerlink" title="HBase与Hive集成使用"></a>HBase与Hive集成使用</h4><p>案例一：建立Hive表，关联HBase表，插入数据到Hive表的同时也能够影响HBase表。</p>
+<ol>
+<li><p>在Hive中创建表的同时关联HBase</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span></pre></td><td class="code"><pre><span class="line"><span class="keyword">CREATE</span> <span class="keyword">TABLE</span> hive_hbase_emp_table1(</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">2</span></pre></td><td class="code"><pre><span class="line">empno <span class="built_in">int</span>,</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">3</span></pre></td><td class="code"><pre><span class="line">ename <span class="keyword">string</span>,</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">4</span></pre></td><td class="code"><pre><span class="line">job <span class="keyword">string</span>,</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">5</span></pre></td><td class="code"><pre><span class="line">mgr <span class="built_in">int</span>,</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">6</span></pre></td><td class="code"><pre><span class="line">hiredate <span class="keyword">string</span>,</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">7</span></pre></td><td class="code"><pre><span class="line">sal <span class="keyword">double</span>,</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">8</span></pre></td><td class="code"><pre><span class="line">comm <span class="keyword">double</span>,</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">9</span></pre></td><td class="code"><pre><span class="line">deptno <span class="built_in">int</span>)</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">10</span></pre></td><td class="code"><pre><span class="line"><span class="keyword">STORED</span> <span class="keyword">BY</span> <span class="string">'org.apache.hadoop.hive.hbase.HBaseStorageHandler'</span></span></pre></td></tr><tr><td class="gutter"><pre><span class="line">11</span></pre></td><td class="code"><pre><span class="line"><span class="keyword">WITH</span> SERDEPROPERTIES (<span class="string">"hbase.columns.mapping"</span> = <span class="string">":key,info:ename,info:job,info:mgr,info:hiredate,info:sal,info:comm,info:deptno"</span>)</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">12</span></pre></td><td class="code"><pre><span class="line">TBLPROPERTIES (<span class="string">"hbase.table.name"</span> = <span class="string">"hbase_emp_table1"</span>);</span></pre></td></tr></table></figure>
+
+<p>完成之后，可以分别进入Hive和HBase查看，都生成了对应的表。</p>
+</li>
+<li><p>在Hive中创建临时中间表，用于load文件中的数据</p>
+<p>提示：不能将数据直接load进Hive所关联HBase的那张表中</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span></pre></td><td class="code"><pre><span class="line"><span class="keyword">CREATE</span> <span class="keyword">TABLE</span> emp(</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">2</span></pre></td><td class="code"><pre><span class="line">empno <span class="built_in">int</span>,</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">3</span></pre></td><td class="code"><pre><span class="line">ename <span class="keyword">string</span>,</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">4</span></pre></td><td class="code"><pre><span class="line">job <span class="keyword">string</span>,</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">5</span></pre></td><td class="code"><pre><span class="line">mgr <span class="built_in">int</span>,</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">6</span></pre></td><td class="code"><pre><span class="line">hiredate <span class="keyword">string</span>,</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">7</span></pre></td><td class="code"><pre><span class="line">sal <span class="keyword">double</span>,</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">8</span></pre></td><td class="code"><pre><span class="line">comm <span class="keyword">double</span>,</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">9</span></pre></td><td class="code"><pre><span class="line">deptno <span class="built_in">int</span>)</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">10</span></pre></td><td class="code"><pre><span class="line"><span class="keyword">row</span> <span class="keyword">format</span> <span class="keyword">delimited</span> <span class="keyword">fields</span> <span class="keyword">terminated</span> <span class="keyword">by</span> <span class="string">'\t'</span>;</span></pre></td></tr></table></figure>
+</li>
+<li><p>向Hive中间表中load数据</p>
+<p>hive&gt; <code>load data local inpath &#39;/home/vinx/data/emp.txt&#39; into table emp;</code></p>
+</li>
+<li><p>通过insert命令将中间表中的数据导入到Hive关联HBase的那张表中</p>
+<p>hive&gt; <code>insert into table hive_hbase_emp_table1 select * from emp;</code></p>
+</li>
+<li><p>查看Hive以及关联的HBase表中是否已经成功的同步插入了数据</p>
+<p>Hive：</p>
+<p>hive&gt; <code>select * from hive_hbase_emp_table;</code></p>
+<p>HBase：</p>
+<p>hbase&gt; <code>scan &#39;hbase_emp_table&#39;</code></p>
+</li>
+</ol>
+<p>案例二：在HBase中已经存储了某一张表hbase_emp_table，然后在Hive中创建一个外部表来关联HBase中的hbase_emp_table这张表，使之可以借助Hive来分析HBase这张表中的数据。</p>
+<p>提示：所以完成此案例前，需先完成案例1。</p>
+<ol>
+<li><p>在Hive中创建外部表</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span></pre></td><td class="code"><pre><span class="line"><span class="keyword">CREATE</span> <span class="keyword">EXTERNAL</span> <span class="keyword">TABLE</span> relevance_hbase_emp(</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">2</span></pre></td><td class="code"><pre><span class="line">empno <span class="built_in">int</span>,</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">3</span></pre></td><td class="code"><pre><span class="line">ename <span class="keyword">string</span>,</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">4</span></pre></td><td class="code"><pre><span class="line">job <span class="keyword">string</span>,</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">5</span></pre></td><td class="code"><pre><span class="line">mgr <span class="built_in">int</span>,</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">6</span></pre></td><td class="code"><pre><span class="line">hiredate <span class="keyword">string</span>,</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">7</span></pre></td><td class="code"><pre><span class="line">sal <span class="keyword">double</span>,</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">8</span></pre></td><td class="code"><pre><span class="line">comm <span class="keyword">double</span>,</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">9</span></pre></td><td class="code"><pre><span class="line">deptno <span class="built_in">int</span>)</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">10</span></pre></td><td class="code"><pre><span class="line"><span class="keyword">STORED</span> <span class="keyword">BY</span> </span></pre></td></tr><tr><td class="gutter"><pre><span class="line">11</span></pre></td><td class="code"><pre><span class="line"><span class="string">'org.apache.hadoop.hive.hbase.HBaseStorageHandler'</span></span></pre></td></tr><tr><td class="gutter"><pre><span class="line">12</span></pre></td><td class="code"><pre><span class="line"><span class="keyword">WITH</span> SERDEPROPERTIES (<span class="string">"hbase.columns.mapping"</span> = </span></pre></td></tr><tr><td class="gutter"><pre><span class="line">13</span></pre></td><td class="code"><pre><span class="line"><span class="string">":key,info:ename,info:job,info:mgr,info:hiredate,info:sal,info:comm,info:deptno"</span>) </span></pre></td></tr><tr><td class="gutter"><pre><span class="line">14</span></pre></td><td class="code"><pre><span class="line">TBLPROPERTIES (<span class="string">"hbase.table.name"</span> = <span class="string">"hbase_emp_table1"</span>);</span></pre></td></tr></table></figure>
+</li>
+<li><p>关联后就可以使用Hive函数进行一些分析操作了</p>
+<p>hive (default)&gt; <code>select * from relevance_hbase_emp;</code></p>
+</li>
+</ol>
+<h4 id="Sqoop集成：MySQL-to-HBase"><a href="#Sqoop集成：MySQL-to-HBase" class="headerlink" title="Sqoop集成：MySQL to HBase"></a>Sqoop集成：MySQL to HBase</h4><p>Sqoop supports additional import targets beyond HDFS and Hive. Sqoop can also import records into a table in HBase.</p>
+<p>相关参数：</p>
+<ul>
+<li><p><code>--column-family&lt;family&gt;</code></p>
+<p>Sets the target column family for the import<br>设置导入的目标列族。</p>
+</li>
+<li><p><code>--hbase-create-table</code></p>
+<p>If specified, create missing HBase tables<br>是否自动创建不存在的HBase表（这就意味着，不需要手动提前在HBase中先建立表）</p>
+</li>
+<li><p><code>--hbase-row-key &lt;col&gt;</code></p>
+<p>Specifies which input column to use as the row key.In case, if input table contains composite<br>key, then <col> must be in the form of a comma-separated list of composite key attributes.<br>mysql中哪一列的值作为HBase的rowkey，如果rowkey是个组合键，则以逗号分隔。（注：避免rowkey的重复）</p>
+</li>
+<li><p><code>--hbase-table &lt;table-name&gt;</code></p>
+<p>Specifies an HBase table to use as the target instead of HDFS.<br>指定数据将要导入到HBase中的哪张表中。</p>
+</li>
+<li><p><code>--hbase-bulkload</code></p>
+<p>Enables bulk loading.<br>是否允许bulk形式的导入。</p>
+</li>
+</ul>
+<p>案例：将RDBMS中的数据抽取到HBase中。</p>
+<ol>
+<li><p>配置sqoop-env.sh，添加如下内容：</p>
+<p><code>export HBASE_HOME=/home/vinx/app/hbase-1.3.1</code></p>
+</li>
+<li><p>在MySQL中新建一个数据库db_library，一张表book</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span></pre></td><td class="code"><pre><span class="line"><span class="keyword">CREATE</span> <span class="keyword">DATABASE</span> db_library;</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">2</span></pre></td><td class="code"><pre><span class="line"></span></pre></td></tr><tr><td class="gutter"><pre><span class="line">3</span></pre></td><td class="code"><pre><span class="line"><span class="keyword">CREATE</span> <span class="keyword">TABLE</span> db_library.book(</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">4</span></pre></td><td class="code"><pre><span class="line"><span class="keyword">id</span> <span class="built_in">int</span>(<span class="number">4</span>) PRIMARY <span class="keyword">KEY</span> <span class="keyword">NOT</span> <span class="literal">NULL</span> AUTO_INCREMENT, </span></pre></td></tr><tr><td class="gutter"><pre><span class="line">5</span></pre></td><td class="code"><pre><span class="line"><span class="keyword">name</span> <span class="built_in">VARCHAR</span>(<span class="number">255</span>) <span class="keyword">NOT</span> <span class="literal">NULL</span>, </span></pre></td></tr><tr><td class="gutter"><pre><span class="line">6</span></pre></td><td class="code"><pre><span class="line">price <span class="built_in">VARCHAR</span>(<span class="number">255</span>) <span class="keyword">NOT</span> <span class="literal">NULL</span>);</span></pre></td></tr></table></figure>
+</li>
+<li><p>向表中插入一些数据</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span></pre></td><td class="code"><pre><span class="line"><span class="keyword">INSERT</span> <span class="keyword">INTO</span> db_library.book (<span class="keyword">name</span>, price) <span class="keyword">VALUES</span>(<span class="string">'Lie Sporting'</span>, <span class="string">'30'</span>);  </span></pre></td></tr><tr><td class="gutter"><pre><span class="line">2</span></pre></td><td class="code"><pre><span class="line"><span class="keyword">INSERT</span> <span class="keyword">INTO</span> db_library.book (<span class="keyword">name</span>, price) <span class="keyword">VALUES</span>(<span class="string">'Pride &amp; Prejudice'</span>, <span class="string">'70'</span>);  </span></pre></td></tr><tr><td class="gutter"><pre><span class="line">3</span></pre></td><td class="code"><pre><span class="line"><span class="keyword">INSERT</span> <span class="keyword">INTO</span> db_library.book (<span class="keyword">name</span>, price) <span class="keyword">VALUES</span>(<span class="string">'Fall of Giants'</span>, <span class="string">'50'</span>);</span></pre></td></tr></table></figure>
+</li>
+<li><p>执行Sqoop导入数据的操作</p>
+<p>手动创建HBase表：</p>
+<p>hbase&gt; <code>create &#39;hbase_book&#39;,&#39;info&#39;</code></p>
+</li>
+<li><p>在HBase中scan这张表得到如下内容</p>
+<p>hbase&gt; <code>scan &#39;hbase_book&#39;</code></p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span></pre></td><td class="code"><pre><span class="line">$ bin/sqoop import \</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">2</span></pre></td><td class="code"><pre><span class="line">--connect jdbc:mysql://hadoop001:3306/db_library \</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">3</span></pre></td><td class="code"><pre><span class="line">--username root \</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">4</span></pre></td><td class="code"><pre><span class="line">--password 123456 \</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">5</span></pre></td><td class="code"><pre><span class="line">--table book \</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">6</span></pre></td><td class="code"><pre><span class="line">--columns <span class="string">"id,name,price"</span> \</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">7</span></pre></td><td class="code"><pre><span class="line">--column-family <span class="string">"info"</span> \</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">8</span></pre></td><td class="code"><pre><span class="line">--hbase-create-table \</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">9</span></pre></td><td class="code"><pre><span class="line">--hbase-row-key <span class="string">"id"</span> \</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">10</span></pre></td><td class="code"><pre><span class="line">--hbase-table <span class="string">"hbase_book"</span> \</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">11</span></pre></td><td class="code"><pre><span class="line">--num-mappers 1 \</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">12</span></pre></td><td class="code"><pre><span class="line">--split-by id</span></pre></td></tr></table></figure>
+
+<p>提示：sqoop1.4.6只支持HBase1.0.1之前的版本的自动创建HBase表的功能。</p>
+</li>
+</ol>
+<h3 id="HBase集成Phoenix"><a href="#HBase集成Phoenix" class="headerlink" title="HBase集成Phoenix"></a>HBase集成Phoenix</h3><h4 id="Phoenix介绍"><a href="#Phoenix介绍" class="headerlink" title="Phoenix介绍"></a>Phoenix介绍</h4><p>可以把Phoenix理解为Hbase的查询引擎，phoenix，由saleforce.com开源的一个项目，后又捐给了Apache。它相当于一个Java中间件，帮助开发者，像使用jdbc访问关系型数据库一些，访问NoSql数据库HBase。</p>
+<p>phoenix，操作的表及数据，存储在hbase上。phoenix只是需要和Hbase进行表关联起来，然后再用工具进行一些读或写操作。</p>
+<p>其实，可以把Phoenix只看成一种代替HBase的语法的一个工具。虽然可以用java可以用jdbc来连接phoenix，然后操作HBase，但是在生产环境中，不可以用在OLTP中。在线事务处理的环境中，需要低延迟，而Phoenix在查询HBase时，虽然做了一些优化，但延迟还是不小。所以依然是用在OLAT中，再将结果返回存储下来。</p>
+<h4 id="Phoenix的使用"><a href="#Phoenix的使用" class="headerlink" title="Phoenix的使用"></a>Phoenix的使用</h4><ul>
+<li><p>启动Phoenix</p>
+<p><code>sqlline.py hadoop001:2181</code></p>
+</li>
+<li><p>展示表</p>
+<p><code>&gt; !table</code></p>
+</li>
+<li><p>创建表</p>
+<p><code>&gt; create table test(id integer not null primary key,name varchar);</code></p>
+</li>
+<li><p>删除表</p>
+<p><code>drop table test;</code></p>
+</li>
+<li><p>插入数据</p>
+<p><code>&gt; upsert into test values(1,&#39;andy&#39;);</code></p>
+<p><code>&gt; upsert into test(name) values(&#39;toms&#39;);</code></p>
+</li>
+<li><p>查询数据</p>
+<p>phoenix &gt; <code>select * from test;</code></p>
+<p>hbase &gt; <code>scan &#39;test&#39;</code></p>
+</li>
+<li><p>退出Phoenix</p>
+<p><code>&gt; !q</code></p>
+</li>
+<li><p>删除数据</p>
+<p><code>delete from test where id=4;</code></p>
+</li>
+<li><p>sum函数的使用</p>
+<p><code>select sum(id) from test;</code></p>
+</li>
+<li><p>增加一列</p>
+<p><code>alter table test add address varchar;</code></p>
+</li>
+<li><p>删除一列</p>
+<p><code>alter table test drop column address;</code></p>
+</li>
+</ul>
+<h4 id="表映射"><a href="#表映射" class="headerlink" title="表映射"></a>表映射</h4><p>hbase创建表：</p>
+<p><code>create &#39;teacher&#39;,&#39;info&#39;,&#39;contact&#39;</code></p>
+<p>插入数据：</p>
+<p><code>put &#39;teacher&#39;,&#39;1001&#39;,&#39;info:name&#39;,&#39;Jack&#39;</code><br><code>put &#39;teacher&#39;,&#39;1001&#39;,&#39;info:age&#39;,&#39;28&#39;</code><br><code>put &#39;teacher&#39;,&#39;1001&#39;,&#39;info:gender&#39;,&#39;male&#39;</code><br><code>put &#39;teacher&#39;,&#39;1001&#39;,&#39;contact:address&#39;,&#39;shanghai&#39;</code><br><code>put &#39;teacher&#39;,&#39;1001&#39;,&#39;contact:phone&#39;,&#39;13458646987&#39;</code></p>
+<p><code>put &#39;teacher&#39;,&#39;1002&#39;,&#39;info:name&#39;,&#39;Jim&#39;</code><br><code>put &#39;teacher&#39;,&#39;1002&#39;,&#39;info:age&#39;,&#39;30&#39;</code><br><code>put &#39;teacher&#39;,&#39;1002&#39;,&#39;info:gender&#39;,&#39;male&#39;</code><br><code>put &#39;teacher&#39;,&#39;1002&#39;,&#39;contact:address&#39;,&#39;tianjian&#39;</code><br><code>put &#39;teacher&#39;,&#39;1002&#39;,&#39;contact:phone&#39;,&#39;13512436987&#39;</code></p>
+<p>在Phoenix创建映射表：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span></pre></td><td class="code"><pre><span class="line"><span class="keyword">create</span> <span class="keyword">view</span> <span class="string">"teacher"</span>(</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">2</span></pre></td><td class="code"><pre><span class="line"><span class="string">"ROW"</span> <span class="built_in">varchar</span> primary <span class="keyword">key</span>,</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">3</span></pre></td><td class="code"><pre><span class="line"><span class="string">"contact"</span>.<span class="string">"address"</span> <span class="built_in">varchar</span>,</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">4</span></pre></td><td class="code"><pre><span class="line"><span class="string">"contact"</span>.<span class="string">"phone"</span> <span class="built_in">varchar</span>,</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">5</span></pre></td><td class="code"><pre><span class="line"><span class="string">"info"</span>.<span class="string">"age"</span>  <span class="built_in">varchar</span>,</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">6</span></pre></td><td class="code"><pre><span class="line"><span class="string">"info"</span>.<span class="string">"gender"</span> <span class="built_in">varchar</span>,</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">7</span></pre></td><td class="code"><pre><span class="line"><span class="string">"info"</span>.<span class="string">"name"</span> <span class="built_in">varchar</span></span></pre></td></tr><tr><td class="gutter"><pre><span class="line">8</span></pre></td><td class="code"><pre><span class="line">);</span></pre></td></tr></table></figure>
+
+<p>在Phoenix查找数据：</p>
+<p><code>select * from &quot;teacher&quot;;</code></p>
+<h3 id="节点的管理"><a href="#节点的管理" class="headerlink" title="节点的管理"></a>节点的管理</h3><h4 id="服役（commissioning）"><a href="#服役（commissioning）" class="headerlink" title="服役（commissioning）"></a>服役（commissioning）</h4><p>当启动regionserver时，regionserver会向HMaster注册并开始接收本地数据，开始的时候，新加入的节点不会有任何数据，平衡器开启的情况下，将会有新的region移动到开启的RegionServer上。如果启动和停止进程是使用ssh和HBase脚本，那么会将新添加的节点的主机名加入到conf/regionservers文件中。</p>
+<ol>
+<li><code>$ ./bin/hbase-daemon.sh stop regionserver</code></li>
+<li>hbase(main)&gt;<code>balance_switch true</code></li>
+</ol>
+<h4 id="退役（decommissioning）"><a href="#退役（decommissioning）" class="headerlink" title="退役（decommissioning）"></a>退役（decommissioning）</h4><p>顾名思义，就是从当前HBase集群中删除某个RegionServer，这个过程分为如下几个过程：</p>
+<p>在0.90.2之前，我们只能通过在要卸载的节点上执行：</p>
+<ol>
+<li><p>停止负载平衡器</p>
+<p>hbase&gt; balance_switch false</p>
+</li>
+<li><p>在退役节点上停止RegionServer</p>
+<p>[vinx@hadoop001 hbase-1.3.1] <code>hbase-daemon.sh stop regionserver</code></p>
+</li>
+<li><p>RegionServer一旦停止，会关闭维护的所有region</p>
+</li>
+<li><p>Zookeeper上的该RegionServer节点消失</p>
+</li>
+<li><p>Master节点检测到该RegionServer下线，开启平衡器</p>
+<p>hbase&gt; <code>balance_switch true</code></p>
+</li>
+<li><p>下线的RegionServer的region服务得到重新分配</p>
+<p>这种方法很大的一个缺点是该节点上的Region会离线很长时间。因为假如该RegionServer上有大量Region的话，因为Region的关闭是顺序执行的，第一个关闭的Region得等到和最后一个Region关闭并Assigned后一起上线。这是一个相当漫长的时间。每个Region Assigned需要4s，也就是说光Assigned就至少需要2个小时。该关闭方法比较传统，需要花费一定的时间，而且会造成部分region短暂的不可用。</p>
+</li>
+</ol>
+<p>另一种方案：自0.90.2之后，HBase添加了一个新的方法，即“graceful_stop”,只需要在HBase Master节点执行</p>
+<ol>
+<li><p>Master节点执行</p>
+<p><code>$ bin/graceful_stop.sh &lt;RegionServer-hostname&gt;</code></p>
+<p>该命令会自动关闭Load Balancer，然后Assigned Region，之后会将该节点关闭。除此之外，你还可以查看remove的过程，已经assigned了多少个Region，还剩多少个Region，每个Region 的Assigned耗时</p>
+</li>
+<li><p>开启负载平衡器</p>
+<p>hbase&gt; <code>balance_switch false</code></p>
+</li>
+</ol>
+</div></article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">Author: </span><span class="post-copyright-info"><a href="mailto:undefined" target="_blank" rel="noopener">VinxC</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">Link: </span><span class="post-copyright-info"><a href="/https:/vinxikk.github.io/2018/06/21/hbase/hbase-hive-phoenix-integration/">https://vinxikk.github.io/2018/06/21/hbase/hbase-hive-phoenix-integration/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">Copyright Notice: </span><span class="post-copyright-info">All articles in this blog are licensed under <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank" rel="noopener">CC BY-NC-SA 4.0</a> unless stating additionally.</span></div></div><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/HBase/">HBase</a></div><nav id="pagination"><div class="prev-post pull-left"><a href="/2018/08/10/spark/spark-window-function/"><i class="fa fa-chevron-left">  </i><span>Spark窗口函数</span></a></div><div class="next-post pull-right"><a href="/2018/06/20/hbase/hbase-read-write-process/"><span>HBase的读写流程&amp;HBase API</span><i class="fa fa-chevron-right"></i></a></div></nav></div></div><footer><div class="layout" id="footer"><div class="copyright">&copy;2017 - 2020 By VinxC</div><div class="framework-info"><span>Driven - </span><a href="http://hexo.io" target="_blank" rel="noopener"><span>Hexo</span></a><span class="footer-separator">|</span><span>Theme - </span><a href="https://github.com/Molunerfinn/hexo-theme-melody" target="_blank" rel="noopener"><span>Melody</span></a></div><div class="busuanzi"><script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><span id="busuanzi_container_page_pv"><i class="fa fa-file-o"></i><span id="busuanzi_value_page_pv"></span><span></span></span></div></div></footer><i class="fa fa-arrow-up" id="go-up" aria-hidden="true"></i><script src="https://cdn.jsdelivr.net/npm/animejs@latest/anime.min.js"></script><script src="https://cdn.jsdelivr.net/npm/jquery@latest/dist/jquery.min.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@latest/dist/jquery.fancybox.min.js"></script><script src="https://cdn.jsdelivr.net/npm/velocity-animate@latest/velocity.min.js"></script><script src="https://cdn.jsdelivr.net/npm/velocity-ui-pack@latest/velocity.ui.min.js"></script><script src="/js/utils.js?version=1.6.1"></script><script src="/js/fancybox.js?version=1.6.1"></script><script src="/js/sidebar.js?version=1.6.1"></script><script src="/js/copy.js?version=1.6.1"></script><script src="/js/fireworks.js?version=1.6.1"></script><script src="/js/transition.js?version=1.6.1"></script><script src="/js/scroll.js?version=1.6.1"></script><script src="/js/head.js?version=1.6.1"></script><script src="/js/search/local-search.js"></script><script>if(/Android|webOS|iPhone|iPod|BlackBerry/i.test(navigator.userAgent)) {
+  $('#nav').addClass('is-mobile')
+  $('footer').addClass('is-mobile')
+}</script><div class="search-dialog" id="local-search"><div class="search-dialog__title" id="local-search-title">Local search</div><div id="local-input-panel"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="Search for Posts"></div></div></div><hr><div id="local-search-results"><div id="local-hits"></div><div id="local-stats"><div class="local-search-stats__hr" id="hr"><span>Powered by</span> <a href="https://github.com/wzpan/hexo-generator-search" target="_blank" rel="noopener" style="color:#49B1F5;">hexo-generator-search</a></div></div></div><span class="search-close-button"><i class="fa fa-times"></i></span></div><div class="search-mask"></div></body></html>

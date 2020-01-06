@@ -1,0 +1,200 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"><meta name="description" content="HBase基本概念和使用"><meta name="keywords" content="HBase"><meta name="author" content="VinxC"><meta name="copyright" content="VinxC"><title>HBase基本概念和使用 | VinxC's blog</title><link rel="shortcut icon" href="/melody-favicon.ico"><link rel="stylesheet" href="/css/index.css?version=1.6.1"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome@latest/css/font-awesome.min.css?version=1.6.1"><link rel="dns-prefetch" href="https://cdn.staticfile.org"><link rel="dns-prefetch" href="https://cdn.bootcss.com"><link rel="dns-prefetch" href="https://creativecommons.org"><script>var GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"search.xml","languages":{"hits_empty":"We didn't find any results for the search: ${query}"}},
+  copy: {
+    success: 'Copy successfully',
+    error: 'Copy error',
+    noSupport: 'The browser does not support'
+  }
+} </script></head><body><canvas class="fireworks"></canvas><i class="fa fa-arrow-right" id="toggle-sidebar" aria-hidden="true"></i><div id="sidebar"><div class="toggle-sidebar-info text-center"><span data-toggle="Toggle article">Toggle site</span><hr></div><div class="sidebar-toc"><div class="sidebar-toc__title">Catalog</div><div class="sidebar-toc__progress"><span class="progress-notice">You've read</span><span class="progress-num">0</span><span class="progress-percentage">%</span><div class="sidebar-toc__progress-bar"></div></div><div class="sidebar-toc__content"><ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#HBase简介"><span class="toc-number">1.</span> <span class="toc-text">HBase简介</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#HBase的角色"><span class="toc-number">2.</span> <span class="toc-text">HBase的角色</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#HMaster"><span class="toc-number">2.1.</span> <span class="toc-text">HMaster</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#HRegionServer"><span class="toc-number">2.2.</span> <span class="toc-text">HRegionServer</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#Write-Ahead-Logs"><span class="toc-number">2.2.1.</span> <span class="toc-text">Write-Ahead Logs</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#HFile"><span class="toc-number">2.2.2.</span> <span class="toc-text">HFile</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#Store"><span class="toc-number">2.2.3.</span> <span class="toc-text">Store</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#MemStore"><span class="toc-number">2.2.4.</span> <span class="toc-text">MemStore</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#Region"><span class="toc-number">2.2.5.</span> <span class="toc-text">Region</span></a></li></ol></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#HBase的架构"><span class="toc-number">3.</span> <span class="toc-text">HBase的架构</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#HBase数据模型"><span class="toc-number">4.</span> <span class="toc-text">HBase数据模型</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#RowKey"><span class="toc-number">4.1.</span> <span class="toc-text">RowKey</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Timestamp"><span class="toc-number">4.2.</span> <span class="toc-text">Timestamp</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Column-Family"><span class="toc-number">4.3.</span> <span class="toc-text">Column Family</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Table-amp-Region"><span class="toc-number">4.4.</span> <span class="toc-text">Table&amp;Region</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#HMaster-1"><span class="toc-number">4.5.</span> <span class="toc-text">HMaster</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#HRegionServer-1"><span class="toc-number">4.6.</span> <span class="toc-text">HRegionServer</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#MemStore-amp-StoreFiles"><span class="toc-number">4.7.</span> <span class="toc-text">MemStore&amp;StoreFiles</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#HLog"><span class="toc-number">4.8.</span> <span class="toc-text">HLog</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#文件类型"><span class="toc-number">4.9.</span> <span class="toc-text">文件类型</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#HBase的使用"><span class="toc-number">5.</span> <span class="toc-text">HBase的使用</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#HBase服务的启动"><span class="toc-number">5.1.</span> <span class="toc-text">HBase服务的启动</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#查看HBase页面"><span class="toc-number">5.2.</span> <span class="toc-text">查看HBase页面</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#基本操作"><span class="toc-number">5.3.</span> <span class="toc-text">基本操作</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#表的操作"><span class="toc-number">5.4.</span> <span class="toc-text">表的操作</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#常用shell操作"><span class="toc-number">5.5.</span> <span class="toc-text">常用shell操作</span></a></li></ol></li></ol></div></div><div class="author-info hide"><div class="author-info__avatar text-center"><img src="https://vinxikk.github.io/img/avatar.png"></div><div class="author-info__name text-center">VinxC</div><div class="author-info__description text-center">A Bigdata Developer</div><hr><div class="author-info-articles"><a class="author-info-articles__archives article-meta" href="/archives"><span class="pull-left">Articles</span><span class="pull-right">70</span></a><a class="author-info-articles__tags article-meta" href="/tags"><span class="pull-left">Tags</span><span class="pull-right">87</span></a><a class="author-info-articles__categories article-meta" href="/categories"><span class="pull-left">Categories</span><span class="pull-right">15</span></a></div><hr><div class="author-info-links"><div class="author-info-links__title text-center">Links</div><a class="author-info-links__name text-center" href="https://molunerfinn.com" target="_blank" rel="noopener">Molunerfinn</a></div></div></div><div id="content-outer"><div class="no-bg" id="top-container"><div id="page-header"><span class="pull-left"> <a id="site-name" href="/">VinxC's blog</a></span><i class="fa fa-bars toggle-menu pull-right" aria-hidden="true"></i><span class="pull-right menus"><a class="site-page social-icon search"><i class="fa fa-search"></i><span> Search</span></a><a class="site-page" href="/">Home</a><a class="site-page" href="/archives">Archives</a><a class="site-page" href="/tags">Tags</a><a class="site-page" href="/categories">Categories</a></span></div><div id="post-info"><div id="post-title">HBase基本概念和使用</div><div id="post-meta"><time class="post-meta__date"><i class="fa fa-calendar" aria-hidden="true"></i> 2018-06-16</time><span class="post-meta__separator">|</span><i class="fa fa-inbox post-meta__icon" aria-hidden="true"></i><a class="post-meta__categories" href="/categories/HBase/">HBase</a><div class="post-meta-wordcount"><span>Word count: </span><span class="word-count">2.6k</span><span class="post-meta__separator">|</span><span>Reading time: 9 min</span></div></div></div></div><div class="layout" id="content-inner"><article id="post"><div class="article-container" id="post-content"><h3 id="HBase简介"><a href="#HBase简介" class="headerlink" title="HBase简介"></a>HBase简介</h3><p>HBase是一个分布式的、面向列的开源数据库，它是一个适合于非结构化数据存储的数据库。</p>
+<p>HBase是基于列的而不是基于行的模式。</p>
+<p>面向列：面向列（族）的存储和权限控制，列（族）独立检索。</p>
+<p>稀疏：对于为空（null）的列，并不占用存储空间，因此，表的设计非常的稀疏。</p>
+<h3 id="HBase的角色"><a href="#HBase的角色" class="headerlink" title="HBase的角色"></a>HBase的角色</h3><h4 id="HMaster"><a href="#HMaster" class="headerlink" title="HMaster"></a>HMaster</h4><ol>
+<li>监控RegionServer</li>
+<li>处理RegionServer故障转移</li>
+<li>处理元数据的变更</li>
+<li>处理region的分配或移除</li>
+<li>在空闲时间进行数据的负载均衡</li>
+<li>通过zookeeper发布自己的位置给客户端</li>
+</ol>
+<h4 id="HRegionServer"><a href="#HRegionServer" class="headerlink" title="HRegionServer"></a>HRegionServer</h4><ol>
+<li>负责存储HBase的实际数据</li>
+<li>处理分配给它的Region</li>
+<li>刷新缓存到HDFS</li>
+<li>维护HLog</li>
+<li>执行压缩</li>
+<li>负责处理Region分片</li>
+</ol>
+<h5 id="Write-Ahead-Logs"><a href="#Write-Ahead-Logs" class="headerlink" title="Write-Ahead Logs"></a>Write-Ahead Logs</h5><p>HBase的修改记录，当对HBase读写数据的时候，数据不是直接写进磁盘，它会在内存中保留一段时间（时间以及数据量阈值可以设定）。</p>
+<p>但把数据保存在内存中可能有更高的概率引起数据丢失，为了解决这个问题，数据会先写在一个叫做Write-Ahead logfile的文件中，然后再写入内存中。所以在系统出现故障的时候，数据可以通过这个日志文件重建。</p>
+<h5 id="HFile"><a href="#HFile" class="headerlink" title="HFile"></a>HFile</h5><p>这是在磁盘上保存原始数据的实际的物理文件，是实际的存储文件。</p>
+<h5 id="Store"><a href="#Store" class="headerlink" title="Store"></a>Store</h5><p>HFile存储在Store中，一个Store对应HBase表中的一个列族。</p>
+<h5 id="MemStore"><a href="#MemStore" class="headerlink" title="MemStore"></a>MemStore</h5><p>内存存储，位于内存中，用来保存当前的数据操作，所以当数据保存在WAL中之后，RegionServer会在内存中存储键值对。</p>
+<h5 id="Region"><a href="#Region" class="headerlink" title="Region"></a>Region</h5><p>HBase表的分片，HBase表会根据rowkey值被切分成不同的region存储在RegionServer中，在一个RegionServer中可以有多个不同的region。</p>
+<h3 id="HBase的架构"><a href="#HBase的架构" class="headerlink" title="HBase的架构"></a>HBase的架构</h3><p>一个RegionServer可以包含多个HRegion，每个RegionServer维护一个HLog，和多个HFiles以及其对应的MemStore。RegionServer运行于DataNode上，数量可以与DatNode数量一致，请参考如下架构图：</p>
+<p><img src="https://vinxikk.github.io/img/hbase/hbase-architecture.png" alt="HBase的架构"></p>
+<h3 id="HBase数据模型"><a href="#HBase数据模型" class="headerlink" title="HBase数据模型"></a>HBase数据模型</h3><p>确定一个单元格（cell）的位置，需要如下四个：</p>
+<p>rowkey + column family + column + timestamp(version版本)，数据有版本的概念，即一个单元格可能有多个值，但是只有最新的一个对外显示。</p>
+<ul>
+<li>HBase中有两张特殊的Table，-ROOT-和.META.</li>
+<li>.META.：记录了用户表的Region信息，.META.可以有多个region</li>
+<li>-ROOT-：记录了.META.表的Region信息，-ROOT-只有一个region</li>
+<li>Zookeeper中记录了-ROOT-表的location</li>
+<li>Client访问用户数据之前需要首先访问zookeeper，然后访问-ROOT-表，接着访问.META.表，最后才能找到用户数据的位置去访问，中间需要多次网络操作，不过client端会做cache缓存（在0.96版本后，Hbase移除了-ROOT-表）。</li>
+</ul>
+<p><img src="https://vinxikk.github.io/img/hbase/hbase-read-data.png" alt="访问数据流程"></p>
+<h4 id="RowKey"><a href="#RowKey" class="headerlink" title="RowKey"></a>RowKey</h4><p>行键，Table的主键，Table中的记录默认按照rowkey升序排序。</p>
+<h4 id="Timestamp"><a href="#Timestamp" class="headerlink" title="Timestamp"></a>Timestamp</h4><p>时间戳，每次数据操作对应的时间戳，可以看作是数据的version number。</p>
+<h4 id="Column-Family"><a href="#Column-Family" class="headerlink" title="Column Family"></a>Column Family</h4><p>列族，Table在水平方向有一个或者多个Column Family组成，一个Column Family中可以由多个Column组成，即Column Family支持动态扩展，无需预先定义Column的数量以及类型，所有Column均以二进制格式存储，用户需要自行进行类型转换。</p>
+<h4 id="Table-amp-Region"><a href="#Table-amp-Region" class="headerlink" title="Table&amp;Region"></a>Table&amp;Region</h4><p>当Table随着记录数不断增加而变大后，会逐渐分裂成多份splits，成为regions，一个region由<code>[startkey,endkey)</code>表示，不同的region会被Master分配给相应的RegionServer进行管理。</p>
+<h4 id="HMaster-1"><a href="#HMaster-1" class="headerlink" title="HMaster"></a>HMaster</h4><p>HMaster没有单点问题，HBase中可以启动多个HMaster，通过Zookeeper的Master Election机制保证总有一个Master运行，HMaster在功能上主要负责Table和Region的管理工作：</p>
+<ol>
+<li>管理用户对Table的增、删、改、查操作</li>
+<li>管理HRegionServer的负载均衡，调整Region分布</li>
+<li>在Region Split后，负责新Region的分配</li>
+<li>在HRegionServer停机后，负责失效HRegionServer上的Regions迁移</li>
+</ol>
+<h4 id="HRegionServer-1"><a href="#HRegionServer-1" class="headerlink" title="HRegionServer"></a>HRegionServer</h4><p>HRegionServer内部管理了一系列HRegion对象，每个HRegion对应了Table中的一个Region，HRegion中由多个HStore组成。</p>
+<p>每个HStore对应了Table中的一个Column Family的存储，可以看出每个Column Family其实就是一个集中的存储单元，因此最好将具备共同IO特性的column放在一个Column Family中，这样最高效。</p>
+<h4 id="MemStore-amp-StoreFiles"><a href="#MemStore-amp-StoreFiles" class="headerlink" title="MemStore&amp;StoreFiles"></a>MemStore&amp;StoreFiles</h4><p>HStore存储是HBase存储的核心了，其中由两部分组成，一部分是MemStore，一部分是StoreFiles。</p>
+<p>MemStore是Sorted Memory Buffer，用户写入的数据首先会放入MemStore，当MemStore满了以后会Flush成一个StoreFile（底层实现是HFile），当StoreFile文件数量增长到一定阈值，会触发Compact合并操作，将多个StoreFiles合并成一个StoreFile，合并过程中会进行版本合并和数据删除，因此可以看出HBase其实只有增加数据，所有的更新和删除操作都是在后续的compact过程中进行的，这使得用户的写操作只要进入内存中就可以立即返回，保证了HBase I/O的高性能。</p>
+<p>当StoreFiles Compact后，会逐步形成越来越大的StoreFile，当单个StoreFile大小超过一定阈值后，会触发Split操作，同时把当前Region Split成2个Region，父Region会下线，新Split出的2个孩子Region会被HMaster分配到相应的HRegionServer上，使得原先1个Region的压力得以分流到2个Region上。</p>
+<h4 id="HLog"><a href="#HLog" class="headerlink" title="HLog"></a>HLog</h4><p>每个HRegionServer中都有一个HLog对象，HLog是一个实现Write Ahead Log的类，在每次用户操作写入MemStore的同时，也会写一份数据到HLog文件中，HLog文件定期会滚动出新的，并删除旧的文件（已持久化到StoreFile中的数据）。</p>
+<p>当HRegionServer意外终止后，HMaster会通过Zookeeper感知到，HMaster首先会处理遗留的 HLog文件，将其中不同Region的Log数据进行拆分，分别放到相应region的目录下，然后再将失效的region重新分配，领取 到这些region的HRegionServer在Load Region的过程中，会发现有历史HLog需要处理，因此会Replay HLog中的数据到MemStore中，然后flush到StoreFiles，完成数据恢复。</p>
+<h4 id="文件类型"><a href="#文件类型" class="headerlink" title="文件类型"></a>文件类型</h4><p>HBase中的所有数据文件都存储在Hadoop HDFS文件系统上，主要包括上述提出的两种文件类型：</p>
+<ol>
+<li>HFile， HBase中KeyValue数据的存储格式，HFile是Hadoop的二进制格式文件，实际上StoreFile就是对HFile做了轻量级包装，即StoreFile底层就是HFile。</li>
+<li>HLog File，HBase中WAL（Write Ahead Log） 的存储格式，物理上是Hadoop的Sequence File。</li>
+</ol>
+<p>Zookeeper中hbase的节点的存储信息：</p>
+<ul>
+<li>rs：regionserver节点信息</li>
+<li>table-lock：hbase的除meta以外的所有表</li>
+<li>Table：hbase的所有的表</li>
+</ul>
+<h3 id="HBase的使用"><a href="#HBase的使用" class="headerlink" title="HBase的使用"></a>HBase的使用</h3><h4 id="HBase服务的启动"><a href="#HBase服务的启动" class="headerlink" title="HBase服务的启动"></a>HBase服务的启动</h4><p>启动方式1：</p>
+<p><code>bin/hbase-daemon.sh start master</code></p>
+<p><code>bin/hbase-daemon.sh start regionserver</code></p>
+<p>提示：如果集群之间的节点时间不同步，会导致regionserver无法启动，抛出ClockOutOfSyncException异常。</p>
+<p>启动方式2：</p>
+<p><code>bin/start-hbase.sh</code></p>
+<p>对应的停止服务：</p>
+<p><code>bin/stop-hbase.sh</code></p>
+<h4 id="查看HBase页面"><a href="#查看HBase页面" class="headerlink" title="查看HBase页面"></a>查看HBase页面</h4><p>启动成功后，可以通过“host:port”的方式来访问HBase管理页面，例如：</p>
+<p><a href="http://hadoop001:16010" target="_blank" rel="noopener">http://hadoop001:16010</a></p>
+<h4 id="基本操作"><a href="#基本操作" class="headerlink" title="基本操作"></a>基本操作</h4><ul>
+<li><p>进入HBase客户端命令行</p>
+<p><code>bin/hbase shell</code></p>
+</li>
+<li><p>查看帮助命令</p>
+<p>hbase(main)&gt; <code>help</code></p>
+</li>
+<li><p>查看当前数据库中有哪些表</p>
+<p>hbase(main)&gt; <code>list</code></p>
+</li>
+<li><p>查看当前数据库中有哪些命名空间</p>
+<p>hbase(main)&gt; <code>list_namespace</code></p>
+</li>
+</ul>
+<h4 id="表的操作"><a href="#表的操作" class="headerlink" title="表的操作"></a>表的操作</h4><ul>
+<li><p>创建表</p>
+<p>hbase(main)&gt; <code>create &#39;student&#39;,&#39;info&#39;</code></p>
+<p>hbase(main)&gt; <code>create &#39;iparkmerchant_order&#39;,&#39;smzf&#39;</code></p>
+<p>hbase(main)&gt; <code>create &#39;staff&#39;,&#39;info&#39;</code></p>
+</li>
+<li><p>插入数据到表</p>
+<p>hbase(main) &gt; <code>put &#39;student&#39;,&#39;1001&#39;,&#39;info:name&#39;,&#39;Thomas&#39;</code></p>
+<p>hbase(main) &gt; <code>put &#39;student&#39;,&#39;1001&#39;,&#39;info:sex&#39;,&#39;male&#39;</code></p>
+<p>hbase(main) &gt; <code>put &#39;student&#39;,&#39;1001&#39;,&#39;info:age&#39;,&#39;18&#39;</code></p>
+<p>hbase(main) &gt; <code>put &#39;student&#39;,&#39;1002&#39;,&#39;info:name&#39;,&#39;Janna&#39;</code></p>
+<p>hbase(main) &gt; <code>put &#39;student&#39;,&#39;1002&#39;,&#39;info:sex&#39;,&#39;female&#39;</code></p>
+<p>hbase(main) &gt; <code>put &#39;student&#39;,&#39;1002&#39;,&#39;info:age&#39;,&#39;20&#39;</code></p>
+<p>数据插入后的数据模型：</p>
+<p><img src="https://vinxikk.github.io/img/hbase/hbase-student-data-model.png" alt="student表的数据模型"></p>
+</li>
+<li><p>扫描查看表数据</p>
+<p>hbase(main) &gt; <code>scan &#39;student&#39;</code></p>
+<p>hbase(main) &gt; <code>scan &#39;student&#39;,{STARTROW =&gt; &#39;1001&#39;, STOPROW  =&gt; &#39;1001&#39;}</code></p>
+<p>hbase(main) &gt; <code>scan &#39;student&#39;,{STARTROW =&gt; &#39;1001&#39;}</code>  从哪一个rowkey开始扫描</p>
+</li>
+<li><p>查看表结构</p>
+<p>hbase(main):&gt; <code>desc &#39;student&#39;</code></p>
+</li>
+<li><p>更新指定字段的数据</p>
+<p>hbase(main) &gt; <code>put &#39;student&#39;,&#39;1001&#39;,&#39;info:name&#39;,&#39;Nick&#39;</code></p>
+<p>hbase(main) &gt; <code>put &#39;student&#39;,&#39;1001&#39;,&#39;info:age&#39;,&#39;100&#39;</code></p>
+<p>hbase(main) &gt; <code>put &#39;student&#39;,&#39;1001&#39;,&#39;info:isNull&#39;,&#39;&#39;</code>（仅测试空值问题）</p>
+</li>
+<li><p>查看<code>指定行</code>或<code>指定列族:列</code>的数据</p>
+<p>hbase(main) &gt; <code>get &#39;student&#39;,&#39;1001&#39;</code></p>
+<p>hbase(main) &gt; <code>get &#39;student&#39;,&#39;1001&#39;,&#39;info:name&#39;</code></p>
+</li>
+<li><p>删除数据</p>
+<p>删除某rowkey的全部数据：</p>
+<p>hbase(main) &gt; <code>deleteall &#39;student&#39;,&#39;1001&#39;</code></p>
+</li>
+<li><p>清空表数据</p>
+<p>hbase(main) &gt; <code>truncate &#39;student&#39;</code></p>
+<p>提示：清空表的操作顺序为先disable，然后再truncate。</p>
+</li>
+<li><p>删除表</p>
+<p>首先需要先让该表为disable状态：</p>
+<p>hbase(main) &gt; <code>disable &#39;student&#39;</code></p>
+<p>检查这个表是否被禁用：</p>
+<p>hbase(main) &gt; <code>is_enabled &#39;hbase_book&#39;</code></p>
+<p>hbase(main) &gt; <code>is_disabled &#39;hbase_book&#39;</code></p>
+<p>然后才能drop这个表：</p>
+<p>hbase(main) &gt; <code>drop &#39;student&#39;</code></p>
+<p>提示：如果直接drop表，会报错：Drop the named table. Table must first be disabled<br>ERROR: Table student is enabled. Disable it first.</p>
+<p>恢复被禁用的表：</p>
+<p><code>enable &#39;student&#39;</code></p>
+</li>
+<li><p>统计表数据行数</p>
+<p>hbase(main) &gt; <code>count &#39;student&#39;</code></p>
+</li>
+<li><p>变更表信息</p>
+<p>将info列族中的数据存放3个版本：</p>
+<p>hbase(main) &gt; <code>alter &#39;student&#39;,{NAME=&gt;&#39;info&#39;,VERSIONS=&gt;3}</code></p>
+<p>查看student的最新版本的数据：</p>
+<p>hbase(main) &gt; <code>get &#39;student&#39;,&#39;1001&#39;</code></p>
+<p>查看HBase中的多版本：</p>
+<p>hbase(main) &gt; <code>get &#39;student&#39;,&#39;1001&#39;,{COLUMN=&gt;&#39;info:name&#39;,VERSIONS=&gt;10}</code></p>
+</li>
+</ul>
+<h4 id="常用shell操作"><a href="#常用shell操作" class="headerlink" title="常用shell操作"></a>常用shell操作</h4><ul>
+<li><p>status：显示服务器状态</p>
+<p>hbase&gt; <code>status &#39;hadoop001&#39;</code></p>
+</li>
+<li><p>exists：检查表是否存在，适用于表量特别多的情况</p>
+<p>hbase&gt; <code>exists &#39;hbase_book&#39;</code></p>
+</li>
+<li><p>is_enabled/is_disabled：检查表是否启用或禁用</p>
+<p>hbase&gt; <code>is_enabled &#39;hbase_book&#39;</code></p>
+<p>hbase&gt; <code>is_disabled &#39;hbase_book&#39;</code></p>
+</li>
+<li><p>alter：该命令可以改变表和列族的模式</p>
+<p>为当前表增加列族：</p>
+<p>hbase&gt; <code>alter &#39;hbase_book&#39;, NAME =&gt; &#39;CF2&#39;, VERSIONS =&gt; 2</code></p>
+<p>为当前表删除列族：</p>
+<p>hbase&gt; <code>alter &#39;hbase_book&#39;, &#39;delete&#39; =&gt; &#39;CF2&#39;</code></p>
+</li>
+<li><p>drop：删除一张表</p>
+<p>hbase&gt; <code>disable &#39;hbase_book&#39;</code></p>
+<p>hbase&gt; <code>drop &#39;hbase_book&#39;</code></p>
+</li>
+<li><p>delete：删除一行中一个单元格的值</p>
+<p>hbase&gt; <code>delete &#39;hbase_book&#39;, &#39;rowKey&#39;, &#39;CF:C&#39;</code></p>
+</li>
+<li><p>truncate：清空表数据，即禁用表 =&gt; 删除表 =&gt; 创建表</p>
+<p>hbase&gt; <code>truncate &#39;hbase_book&#39;</code></p>
+</li>
+<li><p>create：创建多个列族</p>
+<p>hbase&gt; <code>create &#39;t1&#39;, {NAME =&gt; &#39;f1&#39;}, {NAME =&gt; &#39;f2&#39;}, {NAME =&gt; &#39;f3&#39;}</code></p>
+</li>
+</ul>
+</div></article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">Author: </span><span class="post-copyright-info"><a href="mailto:undefined" target="_blank" rel="noopener">VinxC</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">Link: </span><span class="post-copyright-info"><a href="/https:/vinxikk.github.io/2018/06/16/hbase/hbase-basic/">https://vinxikk.github.io/2018/06/16/hbase/hbase-basic/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">Copyright Notice: </span><span class="post-copyright-info">All articles in this blog are licensed under <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank" rel="noopener">CC BY-NC-SA 4.0</a> unless stating additionally.</span></div></div><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/HBase/">HBase</a></div><nav id="pagination"><div class="prev-post pull-left"><a href="/2018/06/18/hbase/hbase-rowkey/"><i class="fa fa-chevron-left">  </i><span>HBase的RowKey设计</span></a></div><div class="next-post pull-right"><a href="/2018/05/29/spark/spark-streaming-basic/"><span>Spark Streaming基础</span><i class="fa fa-chevron-right"></i></a></div></nav></div></div><footer><div class="layout" id="footer"><div class="copyright">&copy;2017 - 2020 By VinxC</div><div class="framework-info"><span>Driven - </span><a href="http://hexo.io" target="_blank" rel="noopener"><span>Hexo</span></a><span class="footer-separator">|</span><span>Theme - </span><a href="https://github.com/Molunerfinn/hexo-theme-melody" target="_blank" rel="noopener"><span>Melody</span></a></div><div class="busuanzi"><script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><span id="busuanzi_container_page_pv"><i class="fa fa-file-o"></i><span id="busuanzi_value_page_pv"></span><span></span></span></div></div></footer><i class="fa fa-arrow-up" id="go-up" aria-hidden="true"></i><script src="https://cdn.jsdelivr.net/npm/animejs@latest/anime.min.js"></script><script src="https://cdn.jsdelivr.net/npm/jquery@latest/dist/jquery.min.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@latest/dist/jquery.fancybox.min.js"></script><script src="https://cdn.jsdelivr.net/npm/velocity-animate@latest/velocity.min.js"></script><script src="https://cdn.jsdelivr.net/npm/velocity-ui-pack@latest/velocity.ui.min.js"></script><script src="/js/utils.js?version=1.6.1"></script><script src="/js/fancybox.js?version=1.6.1"></script><script src="/js/sidebar.js?version=1.6.1"></script><script src="/js/copy.js?version=1.6.1"></script><script src="/js/fireworks.js?version=1.6.1"></script><script src="/js/transition.js?version=1.6.1"></script><script src="/js/scroll.js?version=1.6.1"></script><script src="/js/head.js?version=1.6.1"></script><script src="/js/search/local-search.js"></script><script>if(/Android|webOS|iPhone|iPod|BlackBerry/i.test(navigator.userAgent)) {
+  $('#nav').addClass('is-mobile')
+  $('footer').addClass('is-mobile')
+}</script><div class="search-dialog" id="local-search"><div class="search-dialog__title" id="local-search-title">Local search</div><div id="local-input-panel"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="Search for Posts"></div></div></div><hr><div id="local-search-results"><div id="local-hits"></div><div id="local-stats"><div class="local-search-stats__hr" id="hr"><span>Powered by</span> <a href="https://github.com/wzpan/hexo-generator-search" target="_blank" rel="noopener" style="color:#49B1F5;">hexo-generator-search</a></div></div></div><span class="search-close-button"><i class="fa fa-times"></i></span></div><div class="search-mask"></div></body></html>
