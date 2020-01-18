@@ -1,0 +1,87 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"><meta name="description" content="MySQL的聚簇索引和二级索引"><meta name="keywords" content="MySQL"><meta name="author" content="VinxC"><meta name="copyright" content="VinxC"><title>MySQL的聚簇索引和二级索引 | VinxC's blog</title><link rel="shortcut icon" href="/melody-favicon.ico"><link rel="stylesheet" href="/css/index.css?version=1.6.1"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome@latest/css/font-awesome.min.css?version=1.6.1"><link rel="dns-prefetch" href="https://cdn.staticfile.org"><link rel="dns-prefetch" href="https://cdn.bootcss.com"><link rel="dns-prefetch" href="https://creativecommons.org"><script>var GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"search.xml","languages":{"hits_empty":"We didn't find any results for the search: ${query}"}},
+  copy: {
+    success: 'Copy successfully',
+    error: 'Copy error',
+    noSupport: 'The browser does not support'
+  }
+} </script></head><body><canvas class="fireworks"></canvas><i class="fa fa-arrow-right" id="toggle-sidebar" aria-hidden="true"></i><div id="sidebar"><div class="toggle-sidebar-info text-center"><span data-toggle="Toggle article">Toggle site</span><hr></div><div class="sidebar-toc"><div class="sidebar-toc__title">Catalog</div><div class="sidebar-toc__progress"><span class="progress-notice">You've read</span><span class="progress-num">0</span><span class="progress-percentage">%</span><div class="sidebar-toc__progress-bar"></div></div><div class="sidebar-toc__content"><ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#MySQL的索引"><span class="toc-number">1.</span> <span class="toc-text">MySQL的索引</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#MySQL的聚簇索引"><span class="toc-number">2.</span> <span class="toc-text">MySQL的聚簇索引</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#MySQL的二级索引"><span class="toc-number">3.</span> <span class="toc-text">MySQL的二级索引</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#InnoDB读操作"><span class="toc-number">3.1.</span> <span class="toc-text">InnoDB读操作</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#InnoDB写操作"><span class="toc-number">3.2.</span> <span class="toc-text">InnoDB写操作</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#问题"><span class="toc-number">3.3.</span> <span class="toc-text">问题</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#索引设计"><span class="toc-number">4.</span> <span class="toc-text">索引设计</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#B-树和B树的区别"><span class="toc-number">5.</span> <span class="toc-text">B+树和B树的区别</span></a></li></ol></div></div><div class="author-info hide"><div class="author-info__avatar text-center"><img src="https://vinxikk.github.io/img/avatar.png"></div><div class="author-info__name text-center">VinxC</div><div class="author-info__description text-center">A Bigdata Developer</div><hr><div class="author-info-articles"><a class="author-info-articles__archives article-meta" href="/archives"><span class="pull-left">Articles</span><span class="pull-right">78</span></a><a class="author-info-articles__tags article-meta" href="/tags"><span class="pull-left">Tags</span><span class="pull-right">90</span></a><a class="author-info-articles__categories article-meta" href="/categories"><span class="pull-left">Categories</span><span class="pull-right">15</span></a></div><hr><div class="author-info-links"><div class="author-info-links__title text-center">Links</div><a class="author-info-links__name text-center" href="https://molunerfinn.com" target="_blank" rel="noopener">Molunerfinn</a></div></div></div><div id="content-outer"><div class="no-bg" id="top-container"><div id="page-header"><span class="pull-left"> <a id="site-name" href="/">VinxC's blog</a></span><i class="fa fa-bars toggle-menu pull-right" aria-hidden="true"></i><span class="pull-right menus"><a class="site-page social-icon search"><i class="fa fa-search"></i><span> Search</span></a><a class="site-page" href="/">Home</a><a class="site-page" href="/archives">Archives</a><a class="site-page" href="/tags">Tags</a><a class="site-page" href="/categories">Categories</a></span></div><div id="post-info"><div id="post-title">MySQL的聚簇索引和二级索引</div><div id="post-meta"><time class="post-meta__date"><i class="fa fa-calendar" aria-hidden="true"></i> 2017-08-17</time><span class="post-meta__separator">|</span><i class="fa fa-inbox post-meta__icon" aria-hidden="true"></i><a class="post-meta__categories" href="/categories/MySQL/">MySQL</a><div class="post-meta-wordcount"><span>Word count: </span><span class="word-count">2.5k</span><span class="post-meta__separator">|</span><span>Reading time: 7 min</span></div></div></div></div><div class="layout" id="content-inner"><article id="post"><div class="article-container" id="post-content"><h3 id="MySQL的索引"><a href="#MySQL的索引" class="headerlink" title="MySQL的索引"></a>MySQL的索引</h3><p>每个InnoDB表具有一个特殊的索引，称为聚集索引。</p>
+<p>如果表中定义有主键，该主键索引就是聚集索引。如果未定义主键，MySQL取第一个唯一索引（unique）而且只含非空列（NOT NULL）作为主键，InnoDB使用它作为聚集索引。如果没有这样的列，InnoDB就自己产生一个这样的ID值，它有六个字节，而且是隐藏的，使其作为聚集索引。</p>
+<p>表中的聚集索引（clustered index）就是一级索引，除此之外，表中的其它非聚集索引都是二级索引（secondary indexes），又叫辅助索引。</p>
+<p>二级索引建立在经常使用的列上。在统计一个表总的精确行数<code>count(*)</code>，优化器就会选择表中最小的索引来作为统计目标索引，因为它占用空间最小，IO也会最小。</p>
+<p><strong>聚簇索引（主键索引）</strong>：索引数据和存储数据都在同一颗树上，比如根据id查找，只要找到该主键就找到数据了。</p>
+<p><strong>二级索引（辅助索引）：</strong>比如根据name查找某个商品，就会先找到这个商品对应的主键id，然后根据id再去查找该商品。</p>
+<p><strong>回表：</strong></p>
+<p>回表就是在使用二级索引时，因为二级索引存储了部分数据，如果根据键值查找到的数据不能包括全部目标数据，就需要二级索引指针，也就是键值对中的值，来找到聚簇索引的所有数据，然后根据完整的数据取出所需要列的过程。</p>
+<p>覆盖索引不需要回表。</p>
+<h3 id="MySQL的聚簇索引"><a href="#MySQL的聚簇索引" class="headerlink" title="MySQL的聚簇索引"></a>MySQL的聚簇索引</h3><p>一个表可以建立多个索引，但每一个表都有一个存储了所有数据的索引。聚簇索引在每个表中只有一个，且是建立在主键上面的，这个主键包含的列可以是被隐藏的rowid列，也可以是自增列，还可以被明确定义为不含NULL值的组合列等，也称为聚集索引。</p>
+<h3 id="MySQL的二级索引"><a href="#MySQL的二级索引" class="headerlink" title="MySQL的二级索引"></a>MySQL的二级索引</h3><p>二级索引又称为辅助索引、非聚集索引（no-clustered index），B+ tree结构。</p>
+<p>二级索引的叶子节点不保存记录中的所有列，其叶子节点保存的是<code>&lt;键值, (记录)地址&gt;</code>。类似聚集索引中非叶子节点保存的信息，不同的是二级索引保存的是记录地址，而聚集索引保存的是下一层节点地址。</p>
+<p>记录的地址一般可以保存为两种形式：</p>
+<ol>
+<li>记录的物理地址，页号:槽号:偏移量</li>
+<li>记录的主键值</li>
+</ol>
+<p>InnoDB引擎是索引组织表，所有记录都放在聚集索引里，因此其辅助索引中的记录地址存放的是主键的键值。</p>
+<p>二级索引，叶子节点中存储主键值，每次查找数据时，根据索引找到叶子节点中的主键值，根据主键值再到聚簇索引中得到完整的一行记录。</p>
+<h4 id="InnoDB读操作"><a href="#InnoDB读操作" class="headerlink" title="InnoDB读操作"></a>InnoDB读操作</h4><p>通过二级索引查询记录仅能得到主键值，要查询完整的记录还需要再通过一次聚集索引查询，这种查询方式为书签查找（bookmark lookup）。</p>
+<p><strong>聚集索引：</strong></p>
+<p>例如查字典，每个字所在的位置有一个页码，如果知道一个字的所在具体页数便可以直接翻到相应的页，此时可以把字段中的页码看成主键。</p>
+<p>字典的正文就是一个查询目录而不需要再通过其他目录来查找。</p>
+<p>这种正文本身具有一定的规则排序的目录称为聚集索引。</p>
+<p><strong>二级索引：</strong></p>
+<p>此操作就如查字典，先找到生字的偏旁部首，查找到字在哪一页（获得主键的位置），然后在翻到生字的具体章节页。</p>
+<h4 id="InnoDB写操作"><a href="#InnoDB写操作" class="headerlink" title="InnoDB写操作"></a>InnoDB写操作</h4><p>仅当主键发生改变时，才会更新二级索引。</p>
+<p>二级索引的非叶子节点存放的记录格式为<code>&lt;键值,主键值,地址&gt;</code>，二级索引的非叶子节点依然存在主键信息。二级索引节点的记录不保存隐藏列xid和roll ptr。聚集索引的非叶子节点保存的是下一层节点地址。</p>
+<p>由于二级索引不包含记录的完整信息，在InnoDB存储引擎中二级索引的树高度比聚集索引的树高度小，二级索引效率低。</p>
+<h4 id="问题"><a href="#问题" class="headerlink" title="问题"></a>问题</h4><ol>
+<li><p>相比于叶子节点中存储行指针，二级索引存储主键值会占用更多的空间，那为什么要这样设计呢？</p>
+<p>InnoDB在移动行时，无需维护二级索引，因为叶子节点中存储的是主键值，而不是指针。</p>
+</li>
+<li><p>InnoDB有了聚簇索引，为什么还要有二级索引？</p>
+<p>聚簇索引的叶子节点存储了一行完整的数据，而二级索引只存储了主键值，相比于聚簇索引，占用的空间要少。当需要为表建立多个索引时，如果都是聚簇索引，那将占用大量内存空间。InnoDB中主键所建立的是聚簇索引，而唯一索引、普通索引、前缀索引等都是二级索引。</p>
+</li>
+<li><p>为什么一般情况下，建表的时候都会使用一个自增的id作为主键？</p>
+<p>InnoDB表中的数据是直接存储在主键聚簇索引的叶子节点中的，每插入一条记录，其实都是增加一个叶子节点，如果主键是顺序的，只需要把新增的一条记录存储在上一条记录的后面，当页达到最大填充因子的时候，下一条记录就会写入新的页中，这种情况下，主键页就会近似于被顺序的记录填满。</p>
+<p>若表的主键不是顺序的id，而是无规律数据，比如字符串，InnoDB无法简单地把一行记录插入到索引的最后，而是需要找一个合适的位置（已有数据的中间位置），甚至产生大量的页分裂并且移动大量数据，在寻找合适位置进行插入时，目标也可能不在内存中，这就导致了大量的随机IO操作，影响插入效率。除此之外，大量的页分裂会导致大量的内存碎片。</p>
+</li>
+</ol>
+<h3 id="索引设计"><a href="#索引设计" class="headerlink" title="索引设计"></a>索引设计</h3><p>任务性能涉及：</p>
+<ol>
+<li>内存大小</li>
+<li>CPU运算速度</li>
+<li>IO速度</li>
+</ol>
+<p>索引是一种存储方式，与此相关的最重要部分是磁盘，所以磁盘的性能直接影响数据在数据库中的查询效率。索引的设计必须要尽可能地降低无效数据的读写访问。</p>
+<p>关系型数据库的结构特点：</p>
+<ol>
+<li>数据都是以行为单位存储的，一行中包括一个表（聚簇索引）或一个索引（二级索引）中定义的所有类，多行数据可以连续一起存储。</li>
+<li>一行数据一般会有一个键，以及其他附属的列，称之为值，可以理解为一行数据就是一个键值对。如果没有主键内部会加上一个rowid值的一个主键，默认主键，一样是一个键值对。</li>
+<li>在键值对中，键值可以排序还可以组合键值。B+树中，非叶子节点存储了行数据中的键，而叶子节点存储了所有的行数据。通过非叶子节点的键值及一个位置信息，非叶子节点与下层节点或叶子节点之间的指针，就可以找到其孩子节点。</li>
+</ol>
+<h3 id="B-树和B树的区别"><a href="#B-树和B树的区别" class="headerlink" title="B+树和B树的区别"></a>B+树和B树的区别</h3><p>InnoDB是使用B+树来实现索引功能的。</p>
+<p>区别：</p>
+<ol>
+<li><p>B树中的同一键不会出现多次，可能在叶子节点上也可能在非叶子节点上；</p>
+<p>B+树的键一定会出现在叶子节点上，同时也可能在非叶子节点上重复出现。</p>
+<p>简单的说，B+树的非叶子节点存储的都是键值，键值对应的具体数据都存储在叶子节点上。</p>
+</li>
+<li><p>B树的每个节点存储的是真实数据，会导致每个节点的存储的数据量变小，所以整个B树的高度会相对变高。随着数据量的变大，维护代价也增加；</p>
+<p>B+树的非叶子节点只存储的是键值，相对而言，一个非叶子节点存储的记录个数要比B树多的多。 B+树是横向扩展，随着数据增加，会变成一个矮胖子，B树是纵向扩展，最终树的高度越来越高（高瘦子）。</p>
+</li>
+<li><p>B树的查询效率与键在B树的位置有关系，在叶子节点的时候最大复杂度与B+树相同；B+树复杂度对某个建成的树是固定的。</p>
+</li>
+<li><p>B树的键的位置不固定并且整个树结构中只出现一次，使得增删改查操作复杂度增加；B+树种，非叶子节点对于叶子节点来说就像一个索引，增删改的时候只要找到键值（索引）的位置，再一层层的向下找即可，只有在遇到一个节点存储满了会对B+树分裂。</p>
+</li>
+<li><p>B树中所有的数据都只存储一份；B+树除存储了所有数据的叶子节点外，还有之存储键值数据的非叶子节点。所以，B+树比B树会多占存储空间，多占的空间就是B+树的非叶子节点的所有空间。</p>
+</li>
+</ol>
+<hr>
+<p>参考：</p>
+<p><a href="https://www.cnblogs.com/hustcat/archive/2009/10/28/1591648.html" target="_blank" rel="noopener">https://www.cnblogs.com/hustcat/archive/2009/10/28/1591648.html</a></p>
+</div></article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">Author: </span><span class="post-copyright-info"><a href="mailto:undefined" target="_blank" rel="noopener">VinxC</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">Link: </span><span class="post-copyright-info"><a href="/https:/vinxikk.github.io/2017/08/17/mysql/mysql-index/">https://vinxikk.github.io/2017/08/17/mysql/mysql-index/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">Copyright Notice: </span><span class="post-copyright-info">All articles in this blog are licensed under <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank" rel="noopener">CC BY-NC-SA 4.0</a> unless stating additionally.</span></div></div><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/MySQL/">MySQL</a></div><nav id="pagination"><div class="prev-post pull-left"><a href="/2017/09/15/mysql/mysql-locking/"><i class="fa fa-chevron-left">  </i><span>MySQL的锁：表锁、行锁，乐观锁、悲观锁</span></a></div><div class="next-post pull-right"><a href="/2017/08/11/java/maven-package/"><span>Maven项目打包为jar的几种方式</span><i class="fa fa-chevron-right"></i></a></div></nav></div></div><footer><div class="layout" id="footer"><div class="copyright">&copy;2017 - 2020 By VinxC</div><div class="framework-info"><span>Driven - </span><a href="http://hexo.io" target="_blank" rel="noopener"><span>Hexo</span></a><span class="footer-separator">|</span><span>Theme - </span><a href="https://github.com/Molunerfinn/hexo-theme-melody" target="_blank" rel="noopener"><span>Melody</span></a></div><div class="busuanzi"><script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><span id="busuanzi_container_page_pv"><i class="fa fa-file-o"></i><span id="busuanzi_value_page_pv"></span><span></span></span></div></div></footer><i class="fa fa-arrow-up" id="go-up" aria-hidden="true"></i><script src="https://cdn.jsdelivr.net/npm/animejs@latest/anime.min.js"></script><script src="https://cdn.jsdelivr.net/npm/jquery@latest/dist/jquery.min.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@latest/dist/jquery.fancybox.min.js"></script><script src="https://cdn.jsdelivr.net/npm/velocity-animate@latest/velocity.min.js"></script><script src="https://cdn.jsdelivr.net/npm/velocity-ui-pack@latest/velocity.ui.min.js"></script><script src="/js/utils.js?version=1.6.1"></script><script src="/js/fancybox.js?version=1.6.1"></script><script src="/js/sidebar.js?version=1.6.1"></script><script src="/js/copy.js?version=1.6.1"></script><script src="/js/fireworks.js?version=1.6.1"></script><script src="/js/transition.js?version=1.6.1"></script><script src="/js/scroll.js?version=1.6.1"></script><script src="/js/head.js?version=1.6.1"></script><script src="/js/search/local-search.js"></script><script>if(/Android|webOS|iPhone|iPod|BlackBerry/i.test(navigator.userAgent)) {
+  $('#nav').addClass('is-mobile')
+  $('footer').addClass('is-mobile')
+}</script><div class="search-dialog" id="local-search"><div class="search-dialog__title" id="local-search-title">Local search</div><div id="local-input-panel"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="Search for Posts"></div></div></div><hr><div id="local-search-results"><div id="local-hits"></div><div id="local-stats"><div class="local-search-stats__hr" id="hr"><span>Powered by</span> <a href="https://github.com/wzpan/hexo-generator-search" target="_blank" rel="noopener" style="color:#49B1F5;">hexo-generator-search</a></div></div></div><span class="search-close-button"><i class="fa fa-times"></i></span></div><div class="search-mask"></div></body></html>

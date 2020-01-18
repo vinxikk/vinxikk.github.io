@@ -1,0 +1,302 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"><meta name="description" content="MySQL的锁：表锁、行锁，乐观锁、悲观锁"><meta name="keywords" content="MySQL"><meta name="author" content="VinxC"><meta name="copyright" content="VinxC"><title>MySQL的锁：表锁、行锁，乐观锁、悲观锁 | VinxC's blog</title><link rel="shortcut icon" href="/melody-favicon.ico"><link rel="stylesheet" href="/css/index.css?version=1.6.1"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome@latest/css/font-awesome.min.css?version=1.6.1"><link rel="dns-prefetch" href="https://cdn.staticfile.org"><link rel="dns-prefetch" href="https://cdn.bootcss.com"><link rel="dns-prefetch" href="https://creativecommons.org"><script>var GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"search.xml","languages":{"hits_empty":"We didn't find any results for the search: ${query}"}},
+  copy: {
+    success: 'Copy successfully',
+    error: 'Copy error',
+    noSupport: 'The browser does not support'
+  }
+} </script></head><body><canvas class="fireworks"></canvas><i class="fa fa-arrow-right" id="toggle-sidebar" aria-hidden="true"></i><div id="sidebar"><div class="toggle-sidebar-info text-center"><span data-toggle="Toggle article">Toggle site</span><hr></div><div class="sidebar-toc"><div class="sidebar-toc__title">Catalog</div><div class="sidebar-toc__progress"><span class="progress-notice">You've read</span><span class="progress-num">0</span><span class="progress-percentage">%</span><div class="sidebar-toc__progress-bar"></div></div><div class="sidebar-toc__content"><ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#MySQL锁概述"><span class="toc-number">1.</span> <span class="toc-text">MySQL锁概述</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#MyISAM表锁"><span class="toc-number">2.</span> <span class="toc-text">MyISAM表锁</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#如何加表锁"><span class="toc-number">2.1.</span> <span class="toc-text">如何加表锁</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#查询表级锁争用情况"><span class="toc-number">2.2.</span> <span class="toc-text">查询表级锁争用情况</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#并发插入（Concurrent-Inserts）"><span class="toc-number">2.3.</span> <span class="toc-text">并发插入（Concurrent Inserts）</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#MyISAM的锁调度"><span class="toc-number">2.4.</span> <span class="toc-text">MyISAM的锁调度</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#InnoDB锁"><span class="toc-number">3.</span> <span class="toc-text">InnoDB锁</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#获取InnoDB行锁争用情况"><span class="toc-number">3.1.</span> <span class="toc-text">获取InnoDB行锁争用情况</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#InnoDB的行锁模式及加锁方法"><span class="toc-number">3.2.</span> <span class="toc-text">InnoDB的行锁模式及加锁方法</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#InnoDB行锁实现方式"><span class="toc-number">3.3.</span> <span class="toc-text">InnoDB行锁实现方式</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#间隙锁（Next-Key）"><span class="toc-number">3.4.</span> <span class="toc-text">间隙锁（Next-Key）</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#总结"><span class="toc-number">4.</span> <span class="toc-text">总结</span></a></li></ol></div></div><div class="author-info hide"><div class="author-info__avatar text-center"><img src="https://vinxikk.github.io/img/avatar.png"></div><div class="author-info__name text-center">VinxC</div><div class="author-info__description text-center">A Bigdata Developer</div><hr><div class="author-info-articles"><a class="author-info-articles__archives article-meta" href="/archives"><span class="pull-left">Articles</span><span class="pull-right">78</span></a><a class="author-info-articles__tags article-meta" href="/tags"><span class="pull-left">Tags</span><span class="pull-right">90</span></a><a class="author-info-articles__categories article-meta" href="/categories"><span class="pull-left">Categories</span><span class="pull-right">15</span></a></div><hr><div class="author-info-links"><div class="author-info-links__title text-center">Links</div><a class="author-info-links__name text-center" href="https://molunerfinn.com" target="_blank" rel="noopener">Molunerfinn</a></div></div></div><div id="content-outer"><div class="no-bg" id="top-container"><div id="page-header"><span class="pull-left"> <a id="site-name" href="/">VinxC's blog</a></span><i class="fa fa-bars toggle-menu pull-right" aria-hidden="true"></i><span class="pull-right menus"><a class="site-page social-icon search"><i class="fa fa-search"></i><span> Search</span></a><a class="site-page" href="/">Home</a><a class="site-page" href="/archives">Archives</a><a class="site-page" href="/tags">Tags</a><a class="site-page" href="/categories">Categories</a></span></div><div id="post-info"><div id="post-title">MySQL的锁：表锁、行锁，乐观锁、悲观锁</div><div id="post-meta"><time class="post-meta__date"><i class="fa fa-calendar" aria-hidden="true"></i> 2017-09-15</time><span class="post-meta__separator">|</span><i class="fa fa-inbox post-meta__icon" aria-hidden="true"></i><a class="post-meta__categories" href="/categories/MySQL/">MySQL</a><div class="post-meta-wordcount"><span>Word count: </span><span class="word-count">7.4k</span><span class="post-meta__separator">|</span><span>Reading time: 23 min</span></div></div></div></div><div class="layout" id="content-inner"><article id="post"><div class="article-container" id="post-content"><h3 id="MySQL锁概述"><a href="#MySQL锁概述" class="headerlink" title="MySQL锁概述"></a>MySQL锁概述</h3><p>锁是计算机协调多个进程或线程并发访问某一资源的机制。</p>
+<p>在数据库中，除传统的计算资源（如CPU、RAM、I/O等）的争用以外，数据也是一种供许多用户共享的资源。</p>
+<p>MySQL用到了很多的锁机制，比如行锁、表锁，读锁、写锁等，都是在操作之前先上锁，这些锁统称为悲观锁（Pessimistic Lock）。</p>
+<p>相对于其他数据库而言，MySQL的锁机制比较简单，其最显著的特点是不同的存储引擎支持不同的锁机制。比如，MyISAM和MEMORY存储引擎采用的是表级锁（table-level locking）；BDB存储引擎采用的是页面锁（page-level locking），但也支持表级锁；InnoDB存储引擎既支持行级锁（row-level locking），也支持表级锁，但默认情况下是采用行级锁。</p>
+<p><strong>表级锁：</strong></p>
+<p>开销小，加锁快；不会出现死锁；锁定粒度大，发生锁冲突的概率最高，并发度最低。</p>
+<p><strong>行级锁：</strong></p>
+<p>开销大，加锁慢；会出现死锁；锁定粒度最小，发生锁冲突的概率最低，并发度也最高。</p>
+<p><strong>页面锁：</strong></p>
+<p>开销和加锁时间介于表锁和行锁之间；会出现死锁；锁定粒度介于表锁和行锁之间，并发度一般。</p>
+<p>仅从锁的角度来说，表级锁更适合于以查询为主，只有少量按索引条件更新数据的应用，如web应用；而行级锁则更适合于有大量按索引条件并发更新少量不同数据，同时又有并发查询的应用，如一些在线事务处理（OLTP）系统。</p>
+<p><strong>乐观锁：</strong></p>
+<p>乐观锁就是很乐观地认为，别人不会修改自己要拿的数据，不需要上锁。</p>
+<p>只是在更新的时候，判断下数据是否发生了变更（可以通过版本号来实现），如果发生变更，就重新取数据，更新数据时，再次判断是否变更。</p>
+<p><strong>悲观锁：</strong></p>
+<p>悲观锁就是很悲观地认为，自己取数据时，别人一定会修改，因此直接给要拿的数据加上锁，直到更新完释放了锁，才允许别人修改。</p>
+<p>根据加锁对象的不同分为行锁和表锁（MySQL中，只有InnoDB存储引擎才有行锁，MyISAM只有表锁），根据加锁机制不同分为共享锁和排他锁。</p>
+<ul>
+<li><p>行锁和表锁</p>
+<p>MyISAM操作数据都是使用的表锁，更新一条记录就要锁整个表，因此性能较低，并发不高，但同时不会存在死锁问题。</p>
+<p>InnoDB与MyISAM的最大不同有两点：一是支持事务；二是采用了行级锁。</p>
+<p>在MySQL中，行级锁并不是直接锁记录，而是锁索引。</p>
+<p>索引分为主键索引和非主键索引两种，如果一条SQL语句操作了主键索引，MySQL就会锁定这条主键索引；如果一条语句操作了非主键索引，MySQL会先锁定该非主键索引，再锁定相关的主键索引。</p>
+<p>InnoDB行锁是通过给索引项加锁实现的，如果没有索引，InnoDB会通过隐藏的聚簇索引来对记录加锁。也就是说：如果不通过索引条件检索数据，那么InnoDB将对表中所有数据加锁，实际效果跟表锁一样。因为没有了索引，找到某一条记录就得扫描全表，要扫描全表，就得锁定表。</p>
+</li>
+<li><p>排他锁和共享锁</p>
+<p>数据库的增删改操作默认都会加排他锁，而查询不会加任何锁。</p>
+<p>共享锁：对某一资源加共享锁，自身可以读该资源，其他人也可以读该资源（也可以再继续加共享锁，即共享锁可以多个共存），但无法修改。要想修改就必须等所有共享锁都释放完之后。语法为：</p>
+<p><code>select * from tb_name lock in share mode;</code></p>
+<p>排他锁：对某一资源加排他锁，自身可以进行增删改查，其他人无法进行任何操作。</p>
+<p><code>select * from tb_name for update;</code></p>
+</li>
+</ul>
+<h3 id="MyISAM表锁"><a href="#MyISAM表锁" class="headerlink" title="MyISAM表锁"></a>MyISAM表锁</h3><p>MySQL的表级锁有两种模式：表共享读锁（Table Read Lock）和表独占写锁（Table Write Lock）。</p>
+<p>对MyISAM表的读操作，不会阻塞其他用户对同一表的读请求，但会阻塞对同一表的写请求；对MyISAM表的写操作，则会阻塞其他用户对同一表的读和写操作；MyISAM表的读操作与写操作之间，以及写操作之间是串行的。当一个线程获得对一个表的写锁后，只有持有锁的线程可以对表进行更新操作，其他线程的读、写操作都会等待，直到锁被释放为止。</p>
+<h4 id="如何加表锁"><a href="#如何加表锁" class="headerlink" title="如何加表锁"></a>如何加表锁</h4><p>MyISAM在执行查询语句（SELECT）前，会自动给涉及的所有表加读锁；在执行更新操作（UPDATE、DELETE、INSERT等）前，会自动给涉及的表加写锁，这个过程并不需要用户干预，因此，用户一般不需要直接用<code>LOCK TABLE</code>命令给MyISAM表显式加锁。</p>
+<p>给MyISAM表显式加锁，一般是为了在一定程序上模拟事务操作，实现对某一时间点多个表的一致性读取。</p>
+<p>例如， 有一个订单表orders，其中记录有各订单的总金额total，同时还有一个订单明细表order_detail，其中记录有各订单每一产品的金额小计 subtotal，假设我们需要检查这两个表的金额合计是否相符，可能就需要执行如下两条SQL：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span></pre></td><td class="code"><pre><span class="line"><span class="keyword">select</span> <span class="keyword">sum</span>(total) <span class="keyword">from</span> orders;</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">2</span></pre></td><td class="code"><pre><span class="line"></span></pre></td></tr><tr><td class="gutter"><pre><span class="line">3</span></pre></td><td class="code"><pre><span class="line"><span class="keyword">select</span> <span class="keyword">sum</span>(subtotal) <span class="keyword">from</span> order_detail;</span></pre></td></tr></table></figure>
+
+<p>这时，如果不先给两个表加锁，就可能产生错误的结果，因为第一条语句执行过程中，order_detail表可能已经发生了改变。因此，正确的方法应该是：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span></pre></td><td class="code"><pre><span class="line"><span class="keyword">lock</span> <span class="keyword">tables</span> orders <span class="keyword">read</span> <span class="keyword">local</span>, order_detail <span class="keyword">read</span> <span class="keyword">local</span>;</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">2</span></pre></td><td class="code"><pre><span class="line"></span></pre></td></tr><tr><td class="gutter"><pre><span class="line">3</span></pre></td><td class="code"><pre><span class="line"><span class="keyword">select</span> <span class="keyword">sum</span>(total) <span class="keyword">from</span> orders;</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">4</span></pre></td><td class="code"><pre><span class="line"><span class="keyword">select</span> <span class="keyword">sum</span>(subtotal) <span class="keyword">from</span> order_detail;</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">5</span></pre></td><td class="code"><pre><span class="line"></span></pre></td></tr><tr><td class="gutter"><pre><span class="line">6</span></pre></td><td class="code"><pre><span class="line"><span class="keyword">unlock</span> <span class="keyword">tables</span>;</span></pre></td></tr></table></figure>
+
+<p>特别说明：</p>
+<ol>
+<li>上面的例子在<code>LOCK TABLES</code>时加了“local”选项，其作用就是在满足MyISAM表并发插入条件的情况下，允许其他用户在表尾并发插入记录。</li>
+<li>用<code>LOCK TABLES</code>给表显式加表锁时，必须同时取得所有涉及到表的锁，并且MySQL不支持锁升级。也就是说，在执行LOCK TABLES后，只能访问显式加锁的这些表，不能访问未加锁的表；同时，如果加的是读锁，那么只能执行查询操作，而不能执行更新操作。其实，在自动加锁的情况下也基本如此，MyISAM总是一次获得SQL语句所需要的全部锁。这也正是MyISAM表不会出现死锁（Deadlock Free）的原因。</li>
+</ol>
+<p>当使用<code>LOCK TABLES</code>时，不仅需要一次锁定用到的所有表，而且，同一个表在SQL语句中出现多少次，就要通过与SQL语句中相同的别名锁定多少次，否则也会出错。举例如下：</p>
+<ol>
+<li><p>对actor表获得读锁：</p>
+<p><code>lock table actor read;</code></p>
+</li>
+<li><p>但是通过别名访问会提示错误：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span></pre></td><td class="code"><pre><span class="line"><span class="keyword">select</span> </span></pre></td></tr><tr><td class="gutter"><pre><span class="line">2</span></pre></td><td class="code"><pre><span class="line">a.first_name,</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">3</span></pre></td><td class="code"><pre><span class="line">a.last_name,</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">4</span></pre></td><td class="code"><pre><span class="line">b.first_name,</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">5</span></pre></td><td class="code"><pre><span class="line">b.last_name</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">6</span></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> actor a, actor b</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">7</span></pre></td><td class="code"><pre><span class="line"><span class="keyword">where</span> a.first_name = b.first_name</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">8</span></pre></td><td class="code"><pre><span class="line"><span class="keyword">and</span> a.first_name = <span class="string">'Lisa'</span></span></pre></td></tr><tr><td class="gutter"><pre><span class="line">9</span></pre></td><td class="code"><pre><span class="line"><span class="keyword">and</span> a.last_name = <span class="string">'Jennifer'</span></span></pre></td></tr><tr><td class="gutter"><pre><span class="line">10</span></pre></td><td class="code"><pre><span class="line"><span class="keyword">and</span> a.last_name &lt;&gt; b.last_name;</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">11</span></pre></td><td class="code"><pre><span class="line"></span></pre></td></tr><tr><td class="gutter"><pre><span class="line">12</span></pre></td><td class="code"><pre><span class="line">ERROR 1100 (HY000): Table ‘a’ was not locked <span class="keyword">with</span> <span class="keyword">LOCK</span> <span class="keyword">TABLES</span></span></pre></td></tr></table></figure>
+</li>
+<li><p>需要对别名分别锁定：</p>
+<p><code>lock table actor as a read, actor as b read;</code></p>
+</li>
+<li><p>按照别名查询可以正确执行：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span></pre></td><td class="code"><pre><span class="line"><span class="keyword">select</span> </span></pre></td></tr><tr><td class="gutter"><pre><span class="line">2</span></pre></td><td class="code"><pre><span class="line">a.first_name,</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">3</span></pre></td><td class="code"><pre><span class="line">a.last_name,</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">4</span></pre></td><td class="code"><pre><span class="line">b.first_name,</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">5</span></pre></td><td class="code"><pre><span class="line">b.last_name</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">6</span></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> actor a, actor b</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">7</span></pre></td><td class="code"><pre><span class="line"><span class="keyword">where</span> a.first_name = b.first_name</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">8</span></pre></td><td class="code"><pre><span class="line"><span class="keyword">and</span> a.first_name = <span class="string">'Lisa'</span></span></pre></td></tr><tr><td class="gutter"><pre><span class="line">9</span></pre></td><td class="code"><pre><span class="line"><span class="keyword">and</span> a.last_name = <span class="string">'Jennifer'</span></span></pre></td></tr><tr><td class="gutter"><pre><span class="line">10</span></pre></td><td class="code"><pre><span class="line"><span class="keyword">and</span> a.last_name &lt;&gt; b.last_name;</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">11</span></pre></td><td class="code"><pre><span class="line"></span></pre></td></tr><tr><td class="gutter"><pre><span class="line">12</span></pre></td><td class="code"><pre><span class="line">+————+———–+————+———–+ </span></pre></td></tr><tr><td class="gutter"><pre><span class="line">13</span></pre></td><td class="code"><pre><span class="line">| first_name | last_name | first_name | last_name | </span></pre></td></tr><tr><td class="gutter"><pre><span class="line">14</span></pre></td><td class="code"><pre><span class="line">+————+———–+————+———–+ </span></pre></td></tr><tr><td class="gutter"><pre><span class="line">15</span></pre></td><td class="code"><pre><span class="line">| Lisa | Jennifer | LISA | MONROE | </span></pre></td></tr><tr><td class="gutter"><pre><span class="line">16</span></pre></td><td class="code"><pre><span class="line">+————+———–+————+———–+ </span></pre></td></tr><tr><td class="gutter"><pre><span class="line">17</span></pre></td><td class="code"><pre><span class="line">1 row in <span class="keyword">set</span> (<span class="number">0.00</span> sec)</span></pre></td></tr></table></figure>
+
+</li>
+</ol>
+<h4 id="查询表级锁争用情况"><a href="#查询表级锁争用情况" class="headerlink" title="查询表级锁争用情况"></a>查询表级锁争用情况</h4><p>可以通过检查<code>table_locks_waited</code>和<code>table_locks_immediate</code>状态变量来分析系统上的表锁定争夺情况：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span></pre></td><td class="code"><pre><span class="line"><span class="keyword">show</span> <span class="keyword">status</span> <span class="keyword">like</span> <span class="string">'table%'</span>;</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">2</span></pre></td><td class="code"><pre><span class="line"></span></pre></td></tr><tr><td class="gutter"><pre><span class="line">3</span></pre></td><td class="code"><pre><span class="line">Variable_name | Value </span></pre></td></tr><tr><td class="gutter"><pre><span class="line">4</span></pre></td><td class="code"><pre><span class="line">Table_locks_immediate | 2979 </span></pre></td></tr><tr><td class="gutter"><pre><span class="line">5</span></pre></td><td class="code"><pre><span class="line">Table_locks_waited | 0 </span></pre></td></tr><tr><td class="gutter"><pre><span class="line">6</span></pre></td><td class="code"><pre><span class="line">2 rows in <span class="keyword">set</span> (<span class="number">0.00</span> sec))</span></pre></td></tr></table></figure>
+
+<p>如果<code>Table_locks_waited</code>的值比较高，则说明存在着较严重的表级锁争用情况。</p>
+<h4 id="并发插入（Concurrent-Inserts）"><a href="#并发插入（Concurrent-Inserts）" class="headerlink" title="并发插入（Concurrent Inserts）"></a>并发插入（Concurrent Inserts）</h4><p>上面提到过MyISAM表的读和写是串行的，但这是就总体而言的。在一定条件下，MyISAM表也支持查询和插入操作的并发进行。 </p>
+<p>MyISAM存储引擎有一个系统变量<code>concurrent_insert</code>，专门用以控制其并发插入的行为，其值分别可以为0、1或2。</p>
+<ul>
+<li>当<code>concurrent_insert</code>设置为0时，不允许并发插入。</li>
+<li>当<code>concurrent_insert</code>设置为1时，如果MyISAM表中没有空洞（即表的中间没有被删除的行），MyISAM允许在一个进程读表的同时，另一个进程从表尾插入记录。这也是MySQL的默认设置。</li>
+<li>当<code>concurrent_insert</code>设置为2时，无论MyISAM表中有没有空洞，都允许在表尾并发插入记录。</li>
+</ul>
+<p>可以利用MyISAM存储引擎的并发插入特性，来解决应用中对同一表查询和插入的锁争用。例如，将<code>concurrent_insert</code>系统变量设为2，总是允许并发插入；同时，通过定期在系统空闲时段执行<code>OPTIMIZE TABLE</code>语句来整理空间碎片，收回因删除记录而产生的中间空洞。</p>
+<h4 id="MyISAM的锁调度"><a href="#MyISAM的锁调度" class="headerlink" title="MyISAM的锁调度"></a>MyISAM的锁调度</h4><p>MyISAM存储引擎的读锁和写锁是互斥的，读写操作是串行的。那么，一个进程请求某个 MyISAM表的读锁，同时另一个进程也请求同一表的写锁，MySQL如何处理呢？答案是写进程先获得锁。不仅如此，即使读请求先到锁等待队列，写请求后到，写锁也会插到读锁请求之前！这是因为MySQL认为写请求一般比读请求要重要。这也正是MyISAM表不太适合于有大量更新操作和查询操作应用的原因，因为，大量的更新操作会造成查询操作很难获得读锁，从而可能永远阻塞。这种情况有时可能会变得非常糟糕！幸好我们可以通过一些设置来调节MyISAM 的调度行为。</p>
+<ul>
+<li>通过指定启动参数<code>low-priority-updates</code>，使MyISAM引擎默认给予读请求以优先的权利。</li>
+<li>通过执行命令<code>SET LOW_PRIORITY_UPDATES=1</code>，使该连接发出的更新请求优先级降低。</li>
+<li>通过指定INSERT、UPDATE、DELETE语句的LOW_PRIORITY属性，降低该语句的优先级。</li>
+</ul>
+<p>虽然上面3种方法都是要么更新优先，要么查询优先的方法，但还是可以用其来解决查询相对重要的应用（如用户登录系统）中，读锁等待严重的问题。 </p>
+<p>另外，MySQL也提供了一种折中的办法来调节读写冲突，即给系统参数<code>max_write_lock_count</code>设置一个合适的值，当一个表的读锁达到这个值后，MySQL就暂时将写请求的优先级降低，给读进程一定获得锁的机会。</p>
+<p>上面已经讨论了写优先调度机制带来的问题和解决办法。这里还要强调一点：一些需要长时间运行的查询操作，也会使写进程“饿死”！因此，应用中应尽量避免出现长时间运行的查询操作，不要总想用一条SELECT语句来解决问题，因为这种看似巧妙的SQL语句，往往比较复杂，执行时间较长，在可能的情况下可以通过使用中间表等措施对SQL语句做一定的“分解”，使每 一步查询都能在较短时间完成，从而减少锁冲突。如果复杂查询不可避免，应尽量安排在数据库空闲时段执行，比如一些定期统计可以安排在夜间执行。</p>
+<h3 id="InnoDB锁"><a href="#InnoDB锁" class="headerlink" title="InnoDB锁"></a>InnoDB锁</h3><p>InnoDB与MyISAM的最大不同有两点：一是支持事务（TRANSACTION）；二是采用了行级锁。行级锁与表级锁本来就有许多不同之处，另外，事务的引入也带来了一些新问题。</p>
+<p><strong>事务（Transaction）及其ACID属性：</strong></p>
+<ul>
+<li>原子性（Actomicity）：事务是一个原子操作单元，其对数据的修改，要么全都执行，要么全都不执行。</li>
+<li>一致性（Consistent）：在事务开始和完成时，数据都必须保持一致状态。这意味着所有相关的数据规则都必须应用于事务的修改，以操持完整性；事务结束时，所有的内部数据结构（如B树索引或双向链表）也都必须是正确的。</li>
+<li>隔离性（Isolation）：数据库系统提供一定的隔离机制，保证事务在不受外部并发操作影响的“独立”环境执行。这意味着事务处理过程中的中间状态对外部是不可见的，反之亦然。</li>
+<li>持久性（Durable）：事务完成之后，它对于数据的修改是永久性的，即使出现系统故障也能够保持。</li>
+</ul>
+<p><strong>并发事务带来的问题：</strong></p>
+<p>相对于串行处理来说，并发事务处理能大大增加数据库资源的利用率，提高数据库系统的事务吞吐量，从而可以支持可以支持更多的用户。但并发事务处理也会带来一些问题，主要包括以下几种情况。</p>
+<ul>
+<li>更新丢失（Lost Update）：当两个或多个事务选择同一行，然后基于最初选定的值更新该行时，由于每个事务都不知道其他事务的存在，就会发生丢失更新问题——最后的更新覆盖了其他事务所做的更新。</li>
+<li>脏读（Dirty Reads）：一个事务正在对一条记录做修改，在这个事务并提交前，这条记录的数据就处于不一致状态；这时，另一个事务也来读取同一条记录，如果不加控制，第二个事务读取了这些“脏”的数据，并据此做进一步的处理，就会产生未提交的数据依赖关系。这种现象被形象地叫做“脏读”。</li>
+<li>不可重复读（Non-Repeatable Reads）：一个事务在读取某些数据已经发生了改变、或某些记录已经被删除了，这种现象叫做“不可重复读”。</li>
+<li>幻读（Phantom Reads）：一个事务按相同的查询条件重新读取以前检索过的数据，却发现其他事务插入了满足其查询条件的新数据，这种现象就称为“幻读”。</li>
+</ul>
+<p><strong>事务隔离级别：</strong></p>
+<p>在并发事务处理带来的问题中，“更新丢失”通常应该是完全避免的。但防止更新丢失，并不能单靠数据库事务控制器来解决，需要应用程序对要更新的数据加必要的锁来解决，因此，防止更新丢失应该是应用的责任。</p>
+<p>“脏读”、“不可重复读”和“幻读”，其实都是数据库读一致性问题，必须由数据库提供一定的事务隔离机制来解决。数据库实现事务隔离的方式，基本可以分为以下两种。</p>
+<ul>
+<li>一种是在读取数据前，对其加锁，阻止其他事务对数据进行修改。</li>
+<li>另一种是不用加任何锁，通过一定机制生成一个数据请求时间点的一致性数据快照（Snapshot），并用这个快照来提供一定级别（语句级或事务级）的一致性读取。从用户的角度，好像是数据库可以提供同一数据的多个版本，因此，这种技术叫做数据多版本并发控制（MultiVersion Concurrency Control，简称MVCC或MCC），也经常称为多版本数据库。</li>
+</ul>
+<p>在MVCC并发控制中，读操作可以分成两类：快照读 (snapshot read)与当前读 (current read)。快照读，读取的是记录的可见版本 (有可能是历史版本)，不用加锁。当前读，读取的是记录的最新版本，并且，当前读返回的记录，都会加上锁，保证其他事务不会再并发修改这条记录。</p>
+<p>在一个支持MVCC并发控制的系统中，哪些读操作是快照读？哪些操作又是当前读呢？以MySQL InnoDB为例：</p>
+<ul>
+<li><p>快照读：简单的select操作，属于快照读，不加锁。(当然，也有例外)</p>
+<p><code>select * from tb_name where ?;</code></p>
+</li>
+<li><p>当前读：特殊的读操作，插入/更新/删除操作，属于当前读，需要加锁。</p>
+<p>下面语句都属于当前读，读取记录的最新版本。并且，读取之后，还需要保证其他并发事务不能修改当前记录，对读取记录加锁。其中，除了第一条语句，对读取记录加S锁 (共享锁)外，其他的操作，都加的是X锁 (排它锁)。</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span></pre></td><td class="code"><pre><span class="line"><span class="keyword">select</span> * <span class="keyword">from</span> tb_name <span class="keyword">where</span> ? <span class="keyword">lock</span> <span class="keyword">in</span> <span class="keyword">share</span> <span class="keyword">mode</span>;</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">2</span></pre></td><td class="code"><pre><span class="line"></span></pre></td></tr><tr><td class="gutter"><pre><span class="line">3</span></pre></td><td class="code"><pre><span class="line"><span class="keyword">select</span> * <span class="keyword">from</span> tb_name <span class="keyword">where</span> ? <span class="keyword">for</span> <span class="keyword">update</span>;</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">4</span></pre></td><td class="code"><pre><span class="line"></span></pre></td></tr><tr><td class="gutter"><pre><span class="line">5</span></pre></td><td class="code"><pre><span class="line"><span class="keyword">insert</span> <span class="keyword">into</span> tb_name <span class="keyword">values</span>(...);</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">6</span></pre></td><td class="code"><pre><span class="line"></span></pre></td></tr><tr><td class="gutter"><pre><span class="line">7</span></pre></td><td class="code"><pre><span class="line"><span class="keyword">update</span> tb_name <span class="keyword">set</span> ? <span class="keyword">where</span> ?;</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">8</span></pre></td><td class="code"><pre><span class="line"></span></pre></td></tr><tr><td class="gutter"><pre><span class="line">9</span></pre></td><td class="code"><pre><span class="line"><span class="keyword">delete</span> <span class="keyword">from</span> tb_name <span class="keyword">where</span> ?;</span></pre></td></tr></table></figure>
+
+</li>
+</ul>
+<p>数据库的事务隔离越严格，并发副作用越小，但付出的代价也就越大，因为事务隔离实质上就是使事务在一定程度上 “串行化”进行，这显然与“并发”是矛盾的。同时，不同的应用对读一致性和事务隔离程度的要求也是不同的，比如许多应用对“不可重复读”和“幻读”并不敏 感，可能更关心数据并发访问的能力。</p>
+<p>为了解决“隔离”与“并发”的矛盾，ISO/ANSI SQL92定义了4个事务隔离级别，每个级别的隔离程度不同，允许出现的副作用也不同，应用可以根据自己的业务逻辑要求，通过选择不同的隔离级别来平衡 “隔离”与“并发”的矛盾。下表很好地概括了这4个隔离级别的特性。</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>读数据一致性</th>
+<th>脏读</th>
+<th>不可重复读</th>
+<th>幻读</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Read uncommitted</td>
+<td>最低级别，只能保证不读取物理上损坏的数据</td>
+<td>√</td>
+<td>√</td>
+<td>√</td>
+</tr>
+<tr>
+<td>Read committed</td>
+<td>语句级</td>
+<td>x</td>
+<td>√</td>
+<td>√</td>
+</tr>
+<tr>
+<td>Repeatable read</td>
+<td>事务级</td>
+<td>x</td>
+<td>x</td>
+<td>√</td>
+</tr>
+<tr>
+<td>Serializable</td>
+<td>最高级别，事务级</td>
+<td>x</td>
+<td>x</td>
+<td>x</td>
+</tr>
+</tbody></table>
+<h4 id="获取InnoDB行锁争用情况"><a href="#获取InnoDB行锁争用情况" class="headerlink" title="获取InnoDB行锁争用情况"></a>获取InnoDB行锁争用情况</h4><p>可以通过检查<code>innodb_row_lock</code>状态变量来分析系统上的行锁的争夺情况：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span></pre></td><td class="code"><pre><span class="line"><span class="keyword">show</span> <span class="keyword">status</span> <span class="keyword">like</span> <span class="string">'innodb_row_lock%'</span>;</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">2</span></pre></td><td class="code"><pre><span class="line"></span></pre></td></tr><tr><td class="gutter"><pre><span class="line">3</span></pre></td><td class="code"><pre><span class="line">+<span class="comment">-------------------------------+-------+</span></span></pre></td></tr><tr><td class="gutter"><pre><span class="line">4</span></pre></td><td class="code"><pre><span class="line">| Variable_name                 | Value |</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">5</span></pre></td><td class="code"><pre><span class="line">+<span class="comment">-------------------------------+-------+</span></span></pre></td></tr><tr><td class="gutter"><pre><span class="line">6</span></pre></td><td class="code"><pre><span class="line">| Innodb_row_lock_current_waits | 0     |</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">7</span></pre></td><td class="code"><pre><span class="line">| Innodb_row_lock_time          | 0     |</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">8</span></pre></td><td class="code"><pre><span class="line">| Innodb_row_lock_time_avg      | 0     |</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">9</span></pre></td><td class="code"><pre><span class="line">| Innodb_row_lock_time_max      | 0     |</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">10</span></pre></td><td class="code"><pre><span class="line">| Innodb_row_lock_waits         | 0     |</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">11</span></pre></td><td class="code"><pre><span class="line">+<span class="comment">-------------------------------+-------+</span></span></pre></td></tr><tr><td class="gutter"><pre><span class="line">12</span></pre></td><td class="code"><pre><span class="line">5 rows in <span class="keyword">set</span> (<span class="number">0.11</span> sec)</span></pre></td></tr></table></figure>
+
+<p>如果发现锁争用比较严重，如<code>Innodb_row_lock_waits</code>和<code>Innodb_row_lock_time_avg</code>的值比较高，还可以通过设置InnoDB Monitors来进一步观察发生锁冲突的表、数据行等，并分析锁争用的原因。</p>
+<h4 id="InnoDB的行锁模式及加锁方法"><a href="#InnoDB的行锁模式及加锁方法" class="headerlink" title="InnoDB的行锁模式及加锁方法"></a>InnoDB的行锁模式及加锁方法</h4><p>InnoDB实现了以下两种类型的行锁：</p>
+<ul>
+<li>共享锁（s）：又称读锁。允许一个事务去读一行，阻止其他事务获得相同数据集的排他锁。若事务T对数据对象A加上S锁，则事务T可以读A但不能修改A，其他事务只能再对A加S锁，而不能加X锁，直到T释放A上的S锁。这保证了其他事务可以读A，但在T释放A上的S锁之前不能对A做任何修改。</li>
+<li>排他锁（Ｘ）：又称写锁。允许获取排他锁的事务更新数据，阻止其他事务取得相同的数据集共享读锁和排他写锁。若事务T对数据对象A加上X锁，事务T可以读A也可以修改A，其他事务不能再对A加任何锁，直到T释放A上的锁。</li>
+</ul>
+<p>对于共享锁，就是多个事务只能读数据不能改数据。</p>
+<p>排他锁指的是，一个事务在一行数据加上排他锁后，其他事务不能再在其上加其他的锁。mysql InnoDB引擎默认的修改数据语句：update,delete,insert都会自动给涉及到的数据加上排他锁，select语句默认不会加任何锁类型，如果加排他锁可以使用<code>select … for update</code>语句，加共享锁可以使用<code>select … lock in share mode</code>语句。所以加过排他锁的数据行在其他事务种是不能修改数据的，也不能通过for update和lock in share mode锁的方式查询数据，但可以直接通过<code>select … from …</code>查询数据，因为普通查询没有任何锁机制。</p>
+<p>另外，为了允许行锁和表锁共存，实现多粒度锁机制，InnoDB还有两种内部使用的意向锁（Intention Locks），这两种意向锁都是表锁。</p>
+<ul>
+<li>意向共享锁（IS）：事务打算给数据行共享锁，事务在给一个数据行加共享锁前必须先取得该表的IS锁。</li>
+<li>意向排他锁（IX）：事务打算给数据行加排他锁，事务在给一个数据行加排他锁前必须先取得该表的IX锁。</li>
+</ul>
+<p><strong>InnoDB行锁模式兼容性列表:</strong> </p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>X</th>
+<th>IX</th>
+<th>S</th>
+<th>IS</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>X</td>
+<td>冲突</td>
+<td>冲突</td>
+<td>冲突</td>
+<td>冲突</td>
+</tr>
+<tr>
+<td>IX</td>
+<td>冲突</td>
+<td>兼容</td>
+<td>冲突</td>
+<td>兼容</td>
+</tr>
+<tr>
+<td>S</td>
+<td>冲突</td>
+<td>冲突</td>
+<td>兼容</td>
+<td>兼容</td>
+</tr>
+<tr>
+<td>IS</td>
+<td>冲突</td>
+<td>兼容</td>
+<td>兼容</td>
+<td>兼容</td>
+</tr>
+</tbody></table>
+<p>如果一个事务请求的锁模式与当前的锁兼容，InnoDB就请求的锁授予该事务；反之，如果两者两者不兼容，该事务就要等待锁释放。</p>
+<p>意向锁是InnoDB自动加的，不需用户干预。对于UPDATE、DELETE和INSERT语句，InnoDB会自动给涉及数据集加排他锁（X)；对于普通SELECT语句，InnoDB不会加任何锁。</p>
+<p>事务可以通过以下语句显式给记录集加共享锁或排他锁：</p>
+<ul>
+<li>共享锁（S）：<code>SELECT * FROM tb_name WHERE ... LOCK IN SHARE MODE</code></li>
+<li>排他锁（X）：<code>SELECT * FROM tb_name WHERE ... FOR UPDATE</code></li>
+</ul>
+<p>用<code>SELECT ... IN SHARE MODE</code>获得共享锁，主要用在需要数据依存关系时来确认某行记录是否存在，并确保没有人对这个记录进行UPDATE或者DELETE操作。但是如果当前事务也需要对该记录进行更新操作，则很有可能造成死锁，对于锁定行记录后需要进行更新操作的应用，应该使用<code>SELECT… FOR UPDATE</code>方式获得排他锁。</p>
+<h4 id="InnoDB行锁实现方式"><a href="#InnoDB行锁实现方式" class="headerlink" title="InnoDB行锁实现方式"></a>InnoDB行锁实现方式</h4><p>InnoDB行锁是通过给索引上的索引项加锁来实现的，这一点MySQL与Oracle不同，后者是通过在数据块中对相应数据行加锁来实现的。InnoDB这种行锁实现特点意味着：只有通过索引条件检索数据，InnoDB才使用行级锁，否则，InnoDB将使用表锁。</p>
+<p>在实际应用中，要特别注意InnoDB行锁的这一特性，不然的话，可能导致大量的锁冲突，从而影响并发性能。下面通过一些实际例子来加以说明。</p>
+<ol>
+<li><p>在不通过索引条件查询的时候，InnoDB确实使用的是表锁，而不是行锁。</p>
+<p><code>create table tb_no_index(id int,name varchar(10)) engine=innodb;</code></p>
+<p><code>insert into tb_no_index values(1,&#39;zhangsan&#39;),(2,&#39;lisi&#39;),(3,&#39;wangwu&#39;),(4,&#39;tom&#39;);</code></p>
+<p><img src="https://vinxikk.github.io/img/mysql/mysql-lock-innodb-1.png" alt="没有索引时，InnoDB使用表锁"></p>
+<p>在上面的例子中，看起来session_1只给一行加了排他锁，但session_2在请求其他行的排他锁时，却出现了锁等待！原因就是在没有索引的情况下，InnoDB只能使用表锁。当我们给其增加一个索引后，InnoDB就只锁定了符合条件的行，如下例所示：</p>
+<p>创建tb_with_index表，id字段有普通索引：</p>
+<p><code>create table tb_with_index(id int,name varchar(10)) engine=innodb;</code></p>
+<p><code>alter table tb_with_index add index id(id);</code></p>
+<p><img src="https://vinxikk.github.io/img/mysql/mysql-lock-innodb-2.png" alt="有索引时，InnoDB使用行锁"></p>
+</li>
+<li><p>由于MySQL的行锁是针对索引加的锁，不是针对记录加的锁，所以虽然是访问不同行的记录，但是如果是使用相同的索引键，是会出现锁冲突的，应用设计的时候要注意这一点。</p>
+<p>在下面的例子中，表tb_with_index的id字段有索引，name字段没有索引：</p>
+<p><code>alter table tb_with_index drop index name;</code></p>
+<p><code>insert into tb_with_index  values(1,&#39;tom&#39;);</code></p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span></pre></td><td class="code"><pre><span class="line">mysql&gt; select * from tb_with_index where id = 1;</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">2</span></pre></td><td class="code"><pre><span class="line">+<span class="comment">------+----------+</span></span></pre></td></tr><tr><td class="gutter"><pre><span class="line">3</span></pre></td><td class="code"><pre><span class="line">| id   | name     |</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">4</span></pre></td><td class="code"><pre><span class="line">+<span class="comment">------+----------+</span></span></pre></td></tr><tr><td class="gutter"><pre><span class="line">5</span></pre></td><td class="code"><pre><span class="line">|    1 | zhangsan |</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">6</span></pre></td><td class="code"><pre><span class="line">|    1 | tom      |</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">7</span></pre></td><td class="code"><pre><span class="line">+<span class="comment">------+----------+</span></span></pre></td></tr><tr><td class="gutter"><pre><span class="line">8</span></pre></td><td class="code"><pre><span class="line">2 rows in <span class="keyword">set</span> (<span class="number">0.00</span> sec)</span></pre></td></tr></table></figure>
+
+<p>InnoDB存储引擎使用相同索引键的阻塞例子：</p>
+<p><img src="https://vinxikk.github.io/img/mysql/mysql-lock-innodb-3.png" alt="使用相同索引时，阻塞"></p>
+</li>
+<li><p>当表有多个索引的时候，不同的事务可以使用不同的索引锁定不同的行，另外，不论是使用主键索引、唯一索引或普通索引，InnoDB都会使用行锁来对数据加锁。</p>
+<p>在下面的例子中，表tab_with_index的id字段有主键索引，name字段有普通索引：</p>
+<p><code>alter table tb_with_index add index name(name);</code></p>
+<p>InnoDB存储引擎的表使用不同索引的阻塞例子：</p>
+<p><img src="https://vinxikk.github.io/img/mysql/mysql-lock-innodb-4.png" alt="使用不同索引时，阻塞"></p>
+</li>
+<li><p>即便在条件中使用了索引字段，但是否使用索引来检索数据是由MySQL通过判断不同执行计划的代价来决定的。如果MySQL认为全表扫描效率更高，比如对一些很小的表，它就不会使用索引，这种情况下InnoDB将使用表锁，而不是行锁。因此，在分析锁冲突时，别忘了检查SQL的执行计划，以确认是否真正使用了索引。</p>
+<p>比如，在tb_with_index表里的name字段有索引，但是name字段是varchar类型的，检索值的数据类型与索引字段不同，虽然MySQL能够进行数据类型转换，但却不会使用索引，从而导致InnoDB使用表锁。通过用explain检查两条SQL的执行计划，我们可以清楚地看到了这一点。</p>
+<p><code>explain select * from tb_with_index where name = 1 \G</code></p>
+<p><code>explain select * from tb_with_index where name = &#39;zhangsan&#39; \G</code></p>
+</li>
+</ol>
+<h4 id="间隙锁（Next-Key）"><a href="#间隙锁（Next-Key）" class="headerlink" title="间隙锁（Next-Key）"></a>间隙锁（Next-Key）</h4><p>当我们用范围条件而不是相等条件检索数据，并请求共享或排他锁时，InnoDB会给符合条件的已有数据记录的 索引项加锁；对于键值在条件范围内但并不存在的记录，叫做“间隙（GAP)”，InnoDB也会对这个“间隙”加锁，这种锁机制就是所谓的间隙锁 （Next-Key锁）。</p>
+<p>举例来说，假如emp表中只有101条记录，其empid的值分别是 1,2,…,100,101，下面的SQL：</p>
+<p><code>select * from emp where empid &gt; 100 for update;</code></p>
+<p>是一个范围条件的检索，InnoDB不仅会对符合条件的empid值为101的记录加锁，也会对empid大于101（这些记录并不存在）的“间隙”加锁。</p>
+<p>InnoDB使用间隙锁的目的，一方面是为了防止幻读，以满足相关隔离级别的要求，对于上面的例子，要是不使用间隙锁，如果其他事务插入了empid大于100的任何记录，那么本事务如果再次执行上述语句，就会发生幻读；另外一方面，是为了满足其恢复和复制的需要。</p>
+<p>很显然，在使用范围条件检索并锁定记录时，InnoDB这种加锁机制会阻塞符合条件范围内键值的并发插入，这往往会造成严重的锁等待。因此，在实际应用开发中，尤其是并发插入比较多的应用，我们要尽量优化业务逻辑，尽量使用相等条件来访问更新数据，避免使用范围条件。</p>
+<p>还要特别说明的是，InnoDB除了通过范围条件加锁时使用间隙锁外，如果使用相等条件请求给一个不存在的记录加锁，InnoDB也会使用间隙锁。下面这个例子假设emp表中只有101条记录，其empid的值分别是1,2,……,100,101。</p>
+<p>InnoDB存储引擎的间隙锁阻塞例子：</p>
+<p><img src="https://vinxikk.github.io/img/mysql/mysql-lock-innodb-5.png" alt="间隙锁阻塞"></p>
+<h3 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h3><p>对于MyISAM的表锁：</p>
+<ol>
+<li>共享读锁（S）之间是兼容的，但共享读锁（S）与排他写锁（X）之间，以及排他写锁（X）之间是互斥的，也就是说读和写是串行的。</li>
+<li>在一定条件下，MyISAM允许查询和插入并发执行，我们可以利用这一点来解决应用中对同一表查询和插入的锁争用问题。</li>
+<li>MyISAM默认的锁调度机制是写优先，这并不一定适合所有应用，用户可以通过设置LOW_PRIORITY_UPDATES参数，或在INSERT、UPDATE、DELETE语句中指定LOW_PRIORITY选项来调节读写锁的争用。</li>
+<li>由于表锁的锁定粒度大，读写之间又是串行的，因此，如果更新操作较多，MyISAM表可能会出现严重的锁等待，可以考虑采用InnoDB表来减少锁冲突。</li>
+</ol>
+<p>对于InnoDB表：</p>
+<ol>
+<li>InnoDB的行锁是基于索引实现的，如果不通过索引访问数据，InnoDB会使用表锁。</li>
+<li>在不同的隔离级别下，InnoDB的锁机制和一致性读策略不同。</li>
+</ol>
+<p>在了解InnoDB锁特性后，用户可以通过设计和SQL调整等措施减少锁冲突和死锁，包括：</p>
+<ul>
+<li>尽量使用较低的隔离级别； 精心设计索引，并尽量使用索引访问数据，使加锁更精确，从而减少锁冲突的机会；</li>
+<li>选择合理的事务大小，小事务发生锁冲突的几率也更小；</li>
+<li>给记录集显式加锁时，最好一次性请求足够级别的锁。比如要修改数据的话，最好直接申请排他锁，而不是先申请共享锁，修改时再请求排他锁，这样容易产生死锁；</li>
+<li>不同的程序访问一组表时，应尽量约定以相同的顺序访问各表，对一个表而言，尽可能以固定的顺序存取表中的行。这样可以大大减少死锁的机会；</li>
+<li>尽量用相等条件访问数据，这样可以避免间隙锁对并发插入的影响； 不要申请超过实际需要的锁级别；除非必须，查询时不要显示加锁；</li>
+<li>对于一些特定的事务，可以使用表锁来提高处理速度或减少死锁的可能。</li>
+</ul>
+</div></article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">Author: </span><span class="post-copyright-info"><a href="mailto:undefined" target="_blank" rel="noopener">VinxC</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">Link: </span><span class="post-copyright-info"><a href="/https:/vinxikk.github.io/2017/09/15/mysql/mysql-locking/">https://vinxikk.github.io/2017/09/15/mysql/mysql-locking/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">Copyright Notice: </span><span class="post-copyright-info">All articles in this blog are licensed under <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank" rel="noopener">CC BY-NC-SA 4.0</a> unless stating additionally.</span></div></div><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/MySQL/">MySQL</a></div><nav id="pagination"><div class="prev-post pull-left"><a href="/2018/01/15/mysql/mysql-example-topn/"><i class="fa fa-chevron-left">  </i><span>MySQL案例&amp;TopN实现</span></a></div><div class="next-post pull-right"><a href="/2017/08/17/mysql/mysql-index/"><span>MySQL的聚簇索引和二级索引</span><i class="fa fa-chevron-right"></i></a></div></nav></div></div><footer><div class="layout" id="footer"><div class="copyright">&copy;2017 - 2020 By VinxC</div><div class="framework-info"><span>Driven - </span><a href="http://hexo.io" target="_blank" rel="noopener"><span>Hexo</span></a><span class="footer-separator">|</span><span>Theme - </span><a href="https://github.com/Molunerfinn/hexo-theme-melody" target="_blank" rel="noopener"><span>Melody</span></a></div><div class="busuanzi"><script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><span id="busuanzi_container_page_pv"><i class="fa fa-file-o"></i><span id="busuanzi_value_page_pv"></span><span></span></span></div></div></footer><i class="fa fa-arrow-up" id="go-up" aria-hidden="true"></i><script src="https://cdn.jsdelivr.net/npm/animejs@latest/anime.min.js"></script><script src="https://cdn.jsdelivr.net/npm/jquery@latest/dist/jquery.min.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@latest/dist/jquery.fancybox.min.js"></script><script src="https://cdn.jsdelivr.net/npm/velocity-animate@latest/velocity.min.js"></script><script src="https://cdn.jsdelivr.net/npm/velocity-ui-pack@latest/velocity.ui.min.js"></script><script src="/js/utils.js?version=1.6.1"></script><script src="/js/fancybox.js?version=1.6.1"></script><script src="/js/sidebar.js?version=1.6.1"></script><script src="/js/copy.js?version=1.6.1"></script><script src="/js/fireworks.js?version=1.6.1"></script><script src="/js/transition.js?version=1.6.1"></script><script src="/js/scroll.js?version=1.6.1"></script><script src="/js/head.js?version=1.6.1"></script><script src="/js/search/local-search.js"></script><script>if(/Android|webOS|iPhone|iPod|BlackBerry/i.test(navigator.userAgent)) {
+  $('#nav').addClass('is-mobile')
+  $('footer').addClass('is-mobile')
+}</script><div class="search-dialog" id="local-search"><div class="search-dialog__title" id="local-search-title">Local search</div><div id="local-input-panel"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="Search for Posts"></div></div></div><hr><div id="local-search-results"><div id="local-hits"></div><div id="local-stats"><div class="local-search-stats__hr" id="hr"><span>Powered by</span> <a href="https://github.com/wzpan/hexo-generator-search" target="_blank" rel="noopener" style="color:#49B1F5;">hexo-generator-search</a></div></div></div><span class="search-close-button"><i class="fa fa-times"></i></span></div><div class="search-mask"></div></body></html>
